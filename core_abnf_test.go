@@ -1,114 +1,112 @@
-package core
+package abnf
 
 import (
 	"fmt"
 	"github.com/di-wu/regen"
 	"testing"
-
-	. "github.com/di-wu/abnf"
 )
 
 func TestCore(t *testing.T) {
 	for _, test := range []struct {
 		name                     string
 		validRegex, invalidRegex string
-		rule                     Rule
+		rule                     RuleFunc
 	}{
 		{
 			name:         "ALPHA",
 			validRegex:   `[a-zA-Z]`,
 			invalidRegex: `[^a-zA-Z]`,
-			rule:         ALPHA(),
+			rule:         alpha(),
 		},
 		{
 			name:         "BIT",
 			validRegex:   `[0-1]`,
 			invalidRegex: `[^0-1]`,
-			rule:         BIT(),
+			rule:         bit(),
 		},
 		{
 			name:         "CHAR",
 			validRegex:   `[\x01-\x7A]`,
 			invalidRegex: `\x00`,
-			rule:         CHAR(),
+			rule:         char(),
 		},
 		{
 			name:         "CR",
 			validRegex:   `\x0D`,
 			invalidRegex: `[^\x0D]`,
-			rule:         CR(),
+			rule:         cr(),
 		},
 		{
 			name:         "CRLF",
 			validRegex:   `\x0D\x0A`,
 			invalidRegex: `[^\x0D\x0A]`,
-			rule:         CRLF(),
+			rule:         crlf(),
 		},
 		{
 			name:         "CTL",
 			validRegex:   `[\x00-\x1F]|\x7F`,
 			invalidRegex: `[^\x00-\x1F]|[^\x7F]`,
-			rule:         CTL(),
+			rule:         ctl(),
 		},
 		{
 			name:         "DIGIT",
 			validRegex:   `\d`,
 			invalidRegex: `\D`,
-			rule:         DIGIT(),
+			rule:         digit(),
 		},
 		{
 			name:         "DQUOTE",
 			validRegex:   `\x22`,
 			invalidRegex: `[^\x22]`,
-			rule:         DQUOTE(),
+			rule:         dquote(),
 		},
 		{
 			name:         "HEXDIG",
 			validRegex:   `\d|[A-F]`,
 			invalidRegex: `[^\d]|[^A-F]`,
-			rule:         HEXDIG(),
+			rule:         hexdig(),
 		},
 		{
 			name:         "HTAB",
 			validRegex:   `\x09`,
 			invalidRegex: `[^\x09]`,
-			rule:         HTAB(),
+			rule:         htab(),
 		},
 		{
 			name:         "LF",
 			validRegex:   `\x0A`,
 			invalidRegex: `[^\x0A]`,
-			rule:         LF(),
+			rule:         lf(),
 		},
 		{
 			name:         "LWSP",
 			validRegex:   `((\x0D\x0A)?(\x20|\x09))*`,
 			invalidRegex: `[^\x20]&[^\x09]`, // difficult to specify
-			rule:         LWSP(),
+			rule:         lwsp(),
 		},
 		{
 			name:         "OCTET",
 			validRegex:   `[\x00-\xFF]`,
 			invalidRegex: `[^\x00-\xFF]`,
-			rule:         OCTET(),
+			rule:         octet(),
 		},
 		{
 			name:         "SP",
 			validRegex:   `\x20`,
 			invalidRegex: `[^\x20]`,
-			rule:         SP(),
+			rule:         sp(),
 		},
 		{
 			name:         "VCHAR",
 			validRegex:   `[\x21-\x7E]`,
 			invalidRegex: `[^\x21-\x7E]`,
-			rule:         VCHAR(),
+			rule:         vchar(),
 		},
 		{
 			name:         "WSP",
 			validRegex:   `\x20|\x09`,
 			invalidRegex: `[^\x20]&[^\x09]`,
-			rule:         WSP(),
+			rule:         wsp(),
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -125,7 +123,7 @@ func TestCore(t *testing.T) {
 					}
 				}
 
-				if invalidStr := invalid.Generate(); ParseString(invalidStr, ALPHA()) != nil {
+				if invalidStr := invalid.Generate(); ParseString(invalidStr, alpha()) != nil {
 					t.Errorf("tree fround for: %s", invalidStr)
 				}
 			}
