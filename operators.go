@@ -79,6 +79,14 @@ func Runes(rs ...rune) Rule {
 	}
 }
 
+func String(s string) Rule {
+	rules := make([]Rule, len(s))
+	for i, r := range s {
+		rules[i] = Rune(r)
+	}
+	return Concat(rules...)
+}
+
 func Concat(r ...Rule) Rule {
 	return func(s *scanner) []rune {
 		s.addMarker()
