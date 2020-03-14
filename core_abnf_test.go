@@ -116,7 +116,7 @@ func TestCore(t *testing.T) {
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
 				if value := ParseString(validStr, test.rule); value == nil {
-					t.Errorf("no tree found for: %s", validStr)
+					t.Errorf("no value found for: %s", validStr)
 				} else {
 					if !compareRunes(string(value), validStr) {
 						t.Errorf("values do not match: %s %s", string(value), validStr)
@@ -124,7 +124,7 @@ func TestCore(t *testing.T) {
 				}
 
 				if invalidStr := invalid.Generate(); ParseString(invalidStr, alpha()) != nil {
-					t.Errorf("tree fround for: %s", invalidStr)
+					t.Errorf("value found for: %s", invalidStr)
 				}
 			}
 		})

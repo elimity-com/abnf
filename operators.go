@@ -2,8 +2,37 @@ package abnf
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 )
+
+type ABNF struct {
+	rules map[string]RuleFunc
+	s     *scanner
+}
+
+func New(rules map[string]RuleFunc, s string) *ABNF {
+	return &ABNF{
+		rules: rules,
+		s: &scanner{
+			main:    make([]rune, 0, len(s)),
+			r:       bytes.NewReader([]byte(s)),
+			markers: make([]int, 0, len(s)),
+		},
+	}
+}
+
+func (abnf *ABNF) Get(key string) (string, error) {
+	rule, ok := abnf.rules[key]
+	if !ok {
+		return "", fmt.Errorf("could not find rule with name \"%s\"", key)
+	}
+	runes := rule(abnf.s)
+	if runes == nil {
+		return "", fmt.Errorf("could not find string matching rule \"%s\"", key)
+	}
+	return string(runes), nil
+}
 
 type scanner struct {
 	main    []rune
