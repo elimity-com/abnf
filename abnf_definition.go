@@ -3,7 +3,7 @@ package abnf
 // RFC 5234: 4. ABNF Definition of ABNF
 
 func ruleList() RuleFunc {
-	return Repeat1Inf( Alts(rule(), Concat(repeatCWsp(), cNl())))
+	return Repeat1Inf(Alts(rule(), Concat(repeatCWsp(), cNl())))
 }
 
 func rule() RuleFunc {
@@ -43,7 +43,7 @@ func alternation() RuleFunc {
 }
 
 func concatenation() RuleFunc {
-	return Concat(repetition(), Repeat0Inf(Concat(Repeat1Inf( cWsp()), repetition())))
+	return Concat(repetition(), Repeat0Inf(Concat(Repeat1Inf(cWsp()), repetition())))
 }
 
 func repetition() RuleFunc {
@@ -51,7 +51,7 @@ func repetition() RuleFunc {
 }
 
 func repeat() RuleFunc {
-	return Alts(Repeat1Inf( digit()), Concat(Repeat0Inf(digit()), Rune('*'), Repeat0Inf(digit())))
+	return Alts(Repeat1Inf(digit()), Concat(Repeat0Inf(digit()), Rune('*'), Repeat0Inf(digit())))
 }
 
 func element() RuleFunc {
@@ -75,10 +75,10 @@ func numVal() RuleFunc {
 }
 
 func val(r rune, rule RuleFunc) RuleFunc {
-	return Concat(Rune(r), Repeat1Inf( rule),
-		Optional(Repeat1Inf( Concat(
-			Rune('.'), Repeat(1, 0, rule),
-			Rune('-'), Repeat(1, 0, rule),
+	return Concat(Rune(r), Repeat1Inf(rule),
+		Optional(Repeat1Inf(Alts(
+			Rune('.'), Repeat1Inf(rule),
+			Rune('-'), Repeat1Inf(rule),
 		))),
 	)
 }
