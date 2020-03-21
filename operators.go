@@ -7,18 +7,14 @@ import (
 )
 
 type ABNF struct {
-	rules map[string]RuleFunc
-	s     *scanner
+	rules map[string]Operator
+	s     *Scanner
 }
 
-func New(rules map[string]RuleFunc, s string) *ABNF {
+func New(rules map[string]Operator, s string) *ABNF {
 	return &ABNF{
 		rules: rules,
-		s: &scanner{
-			main:    make([]rune, 0, len(s)),
-			r:       bytes.NewReader([]byte(s)),
-			markers: make([]int, 0, len(s)),
-		},
+		s:     NewScanner(s),
 	}
 }
 
@@ -34,15 +30,23 @@ func (abnf *ABNF) Get(key string) (string, error) {
 	return string(runes), nil
 }
 
-type scanner struct {
+type Scanner struct {
 	main    []rune
 	r       io.RuneReader
 	markers []int
 	pointer int
 }
 
-func ParseString(s string, rule RuleFunc) []rune {
-	scanner := &scanner{
+func NewScanner(s string) *Scanner {
+	return &Scanner{
+		main:    make([]rune, 0, len(s)),
+		r:       bytes.NewReader([]byte(s)),
+		markers: make([]int, 0, len(s)),
+	}
+}
+
+func ParseString(s string, rule Operator) []rune {
+	scanner := &Scanner{
 		main:    make([]rune, 0, len(s)),
 		r:       bytes.NewReader([]byte(s)),
 		markers: make([]int, 0, len(s)),
@@ -54,22 +58,22 @@ func ParseString(s string, rule RuleFunc) []rune {
 	return nil
 }
 
-func (s *scanner) addMarker() {
+func (s *Scanner) addMarker() {
 	s.markers = append(s.markers, s.pointer) // add marker
 }
 
-func (s *scanner) rollbackMarker() {
+func (s *Scanner) rollbackMarker() {
 	s.pointer = s.markers[len(s.markers)-1]  // assign pointer
 	s.markers = s.markers[:len(s.markers)-1] // pop marker
 }
 
-func (s *scanner) commitValue() []rune {
+func (s *Scanner) commitValue() []rune {
 	r := s.main[s.markers[len(s.markers)-1]:s.pointer] // load runes from marker until pointer
 	s.markers = s.markers[:len(s.markers)-1]           // pop marker
 	return r
 }
 
-func (s *scanner) nextRune() []rune {
+func (s *Scanner) nextRune() []rune {
 	if len(s.main) <= s.pointer {
 		r, _, err := s.r.ReadRune()
 		if err != nil {
@@ -80,10 +84,10 @@ func (s *scanner) nextRune() []rune {
 	return s.main[s.pointer : s.pointer+1]
 }
 
-type RuleFunc func(s *scanner) []rune
+type Operator func(s *Scanner) []rune
 
-func Rune(r rune) RuleFunc {
-	return func(s *scanner) []rune {
+func Rune(r rune) Operator {
+	return func(s *Scanner) []rune {
 		if n := s.nextRune(); n != nil && n[0] == r {
 			s.pointer++
 			return n
@@ -92,8 +96,8 @@ func Rune(r rune) RuleFunc {
 	}
 }
 
-func Runes(rs ...rune) RuleFunc {
-	return func(s *scanner) []rune {
+func Runes(rs ...rune) Operator {
+	return func(s *Scanner) []rune {
 		n := s.nextRune()
 		if n == nil {
 			return nil
@@ -108,16 +112,16 @@ func Runes(rs ...rune) RuleFunc {
 	}
 }
 
-func String(s string) RuleFunc {
-	rules := make([]RuleFunc, len(s))
+func String(s string) Operator {
+	rules := make([]Operator, len(s))
 	for i, r := range s {
 		rules[i] = Rune(r)
 	}
 	return Concat(rules...)
 }
 
-func Concat(r ...RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Concat(r ...Operator) Operator {
+	return func(s *Scanner) []rune {
 		s.addMarker()
 		for _, rule := range r {
 			if rule(s) == nil {
@@ -129,8 +133,8 @@ func Concat(r ...RuleFunc) RuleFunc {
 	}
 }
 
-func Alts(r ...RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Alts(r ...Operator) Operator {
+	return func(s *Scanner) []rune {
 		for _, rule := range r {
 			if alt := rule(s); alt != nil {
 				return alt
@@ -140,8 +144,8 @@ func Alts(r ...RuleFunc) RuleFunc {
 	}
 }
 
-func Range(l, h rune) RuleFunc {
-	return func(s *scanner) []rune {
+func Range(l, h rune) Operator {
+	return func(s *Scanner) []rune {
 		if r := s.nextRune(); r != nil && l <= r[0] && r[0] <= h {
 			s.pointer++
 			return r
@@ -150,32 +154,32 @@ func Range(l, h rune) RuleFunc {
 	}
 }
 
-func Repeat(min, max int, r RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Repeat(min, max int, r Operator) Operator {
+	return func(s *Scanner) []rune {
 		return repeatRule(s, min, max, r)
 	}
 }
 
-func RepeatN(n int, r RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func RepeatN(n int, r Operator) Operator {
+	return func(s *Scanner) []rune {
 		return repeatRule(s, n, n, r)
 	}
 }
 
-func Repeat0Inf(r RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Repeat0Inf(r Operator) Operator {
+	return func(s *Scanner) []rune {
 		return repeatRule(s, 0, -1, r)
 	}
 }
 
-func Repeat1Inf(r RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Repeat1Inf(r Operator) Operator {
+	return func(s *Scanner) []rune {
 		return repeatRule(s, 1, -1, r)
 	}
 }
 
-func Optional(r RuleFunc) RuleFunc {
-	return func(s *scanner) []rune {
+func Optional(r Operator) Operator {
+	return func(s *Scanner) []rune {
 		opt := r(s)
 		if opt == nil {
 			opt = make([]rune, 0)
@@ -184,7 +188,7 @@ func Optional(r RuleFunc) RuleFunc {
 	}
 }
 
-func repeatRule(s *scanner, min, max int, r RuleFunc) []rune {
+func repeatRule(s *Scanner, min, max int, r Operator) []rune {
 	s.addMarker()
 	var i int
 	for max < 0 || i < max {

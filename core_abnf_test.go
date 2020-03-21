@@ -10,7 +10,7 @@ func TestCore(t *testing.T) {
 	for _, test := range []struct {
 		name                     string
 		validRegex, invalidRegex string
-		rule                     RuleFunc
+		rule                     Operator
 	}{
 		{
 			name:         "ALPHA",
