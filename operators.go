@@ -1,19 +1,23 @@
 package abnf
 
-type Operator func(s *Scanner) []rune
+type Operator func(s *Scanner) *AST
 
-func Rune(r rune) Operator {
-	return func(s *Scanner) []rune {
+func Rune(name string, r rune) Operator {
+	return func(s *Scanner) *AST {
 		if n := s.nextRune(); n != nil && n[0] == r {
 			s.pointer++
-			return n
+			return &AST{
+				Name:     name,
+				Raw:      n,
+				Children: nil,
+			}
 		}
 		return nil
 	}
 }
 
-func Runes(rs ...rune) Operator {
-	return func(s *Scanner) []rune {
+func Runes(name string, rs ...rune) Operator {
+	return func(s *Scanner) *AST {
 		n := s.nextRune()
 		if n == nil {
 			return nil
@@ -21,101 +25,145 @@ func Runes(rs ...rune) Operator {
 		for _, r := range rs {
 			if n[0] == r {
 				s.pointer++
-				return n
+				return &AST{
+					Name:     name,
+					Raw:      n,
+					Children: nil,
+				}
 			}
 		}
 		return nil
 	}
 }
 
-func String(s string) Operator {
+func String(name, s string) Operator {
 	rules := make([]Operator, len(s))
 	for i, r := range s {
-		rules[i] = Rune(r)
+		rules[i] = Rune(string(r), r)
 	}
-	return Concat(rules...)
+	return Concat(name, rules...)
 }
 
-func Concat(r ...Operator) Operator {
-	return func(s *Scanner) []rune {
+func Concat(name string, r ...Operator) Operator {
+	return func(s *Scanner) *AST {
 		s.addMarker()
-		for _, rule := range r {
-			if rule(s) == nil {
+		children := make([]AST, len(r))
+		for i, rule := range r {
+			n := rule(s)
+			if n == nil {
 				s.rollbackMarker()
 				return nil
 			}
+			children[i] = *n
 		}
-		return s.commitValue()
+		return &AST{
+			Name:     name,
+			Raw:      s.commitValue(),
+			Children: children,
+		}
 	}
 }
 
-func Alts(r ...Operator) Operator {
-	return func(s *Scanner) []rune {
+func Alts(name string, r ...Operator) Operator {
+	return func(s *Scanner) *AST {
+		var alt *AST // the (longest) best match
+		var size int // the length of the raw result in alt
 		for _, rule := range r {
-			if alt := rule(s); alt != nil {
-				return alt
+			n := rule(s)
+			if n == nil {
+				continue
+			}
+			if s := len(n.Raw); s > size {
+				alt = n
+				size = s
+			}
+		}
+		if alt != nil {
+			return &AST{
+				Name:     name,
+				Raw:      alt.Raw,
+				Children: []AST{*alt},
 			}
 		}
 		return nil
 	}
 }
 
-func Range(l, h rune) Operator {
-	return func(s *Scanner) []rune {
+func Range(name string, l, h rune) Operator {
+	return func(s *Scanner) *AST {
 		if r := s.nextRune(); r != nil && l <= r[0] && r[0] <= h {
 			s.pointer++
-			return r
+			return &AST{
+				Name:     name,
+				Raw:      r,
+				Children: nil,
+			}
 		}
 		return nil
 	}
 }
 
-func Repeat(min, max int, r Operator) Operator {
-	return func(s *Scanner) []rune {
-		return repeatRule(s, min, max, r)
+func Repeat(name string, min, max int, r Operator) Operator {
+	return func(s *Scanner) *AST {
+		return repeatRule(name, s, min, max, r)
 	}
 }
 
-func RepeatN(n int, r Operator) Operator {
-	return func(s *Scanner) []rune {
-		return repeatRule(s, n, n, r)
+func RepeatN(name string, n int, r Operator) Operator {
+	return func(s *Scanner) *AST {
+		return repeatRule(name, s, n, n, r)
 	}
 }
 
-func Repeat0Inf(r Operator) Operator {
-	return func(s *Scanner) []rune {
-		return repeatRule(s, 0, -1, r)
+func Repeat0Inf(name string, r Operator) Operator {
+	return func(s *Scanner) *AST {
+		return repeatRule(name, s, 0, -1, r)
 	}
 }
 
-func Repeat1Inf(r Operator) Operator {
-	return func(s *Scanner) []rune {
-		return repeatRule(s, 1, -1, r)
+func Repeat1Inf(name string, r Operator) Operator {
+	return func(s *Scanner) *AST {
+		return repeatRule(name, s, 1, -1, r)
 	}
 }
 
-func Optional(r Operator) Operator {
-	return func(s *Scanner) []rune {
-		opt := r(s)
-		if opt == nil {
-			opt = make([]rune, 0)
+func Optional(name string, r Operator) Operator {
+	return func(s *Scanner) *AST {
+		n := r(s)
+		if n == nil {
+			return &AST{
+				Name:     name,
+				Raw:      nil,
+				Children: nil,
+			}
 		}
-		return opt
+		return &AST{
+			Name:     name,
+			Raw:      n.Raw,
+			Children: n.Children,
+		}
 	}
 }
 
-func repeatRule(s *Scanner, min, max int, r Operator) []rune {
+func repeatRule(name string, s *Scanner, min, max int, r Operator) *AST {
 	s.addMarker()
+	children := make([]AST, 0)
 	var i int
 	for max < 0 || i < max {
-		if r(s) == nil {
+		n := r(s)
+		if n == nil {
 			break
 		}
+		children = append(children, *n)
 		i++
 	}
 	if i < min {
 		s.rollbackMarker()
 		return nil
 	}
-	return s.commitValue()
+	return &AST{
+		Name:     name,
+		Raw:      s.commitValue(),
+		Children: children,
+	}
 }

@@ -20,7 +20,7 @@ func NewScanner(s string) *Scanner {
 	}
 }
 
-func ParseString(s string, rule Operator) []rune {
+func ParseString(s string, rule Operator) *AST {
 	return rule(NewScanner(s))
 }
 

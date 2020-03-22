@@ -115,11 +115,11 @@ func TestCore(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if value := ParseString(validStr, test.rule); value == nil {
+				if ast := ParseString(validStr, test.rule); ast == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
-					if !compareRunes(string(value), validStr) {
-						t.Errorf("values do not match: %s %s", string(value), validStr)
+					if !compareRunes(string(ast.Raw), validStr) {
+						t.Errorf("values do not match: %s %s", string(ast.Raw), validStr)
 					}
 				}
 

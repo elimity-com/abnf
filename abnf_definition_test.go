@@ -2,6 +2,7 @@ package abnf
 
 import (
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/di-wu/regen"
@@ -101,11 +102,11 @@ func TestValues(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if value := ParseString(validStr, test.rule); value == nil {
+				if ast := ParseString(validStr, test.rule); ast == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
-					if !compareRunes(string(value), validStr) {
-						t.Errorf("values do not match: %s %s", string(value), validStr)
+					if !compareRunes(string(ast.Raw), validStr) {
+						t.Errorf("values do not match: %s %s", string(ast.Raw), validStr)
 					}
 				}
 
@@ -114,5 +115,29 @@ func TestValues(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestABNF(t *testing.T) {
+	raw, err := ioutil.ReadFile("testdata/core.abnf")
+	if err != nil {
+		t.Error(err)
+	}
+	ruleList := ParseString(string(raw), ruleList)
+
+	if l := len(ruleList.Children); l != 16 {
+		t.Errorf("should have 16 rules, got %d", l)
+	}
+
+	if l := len(ruleList.GetAllNodes("=")); l != 16 {
+		t.Errorf("should have 16 =, got %d", l)
+	}
+
+	if l := len(ruleList.GetAllNodes("comment")); l != 22 {
+		t.Errorf("should have 22 comments, got %d", l)
+	}
+
+	if l := len(ruleList.GetAllNodes("CRLF")); l != 34 {
+		t.Errorf("should have 34 EOLs, got %d", l)
 	}
 }
