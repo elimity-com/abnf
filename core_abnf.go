@@ -24,7 +24,8 @@ func cr() Operator {
 
 // CRLF = CR LF ; Internet standard newline
 func crlf() Operator {
-	return Concat(cr(), lf())
+	// TODO: abnf only allows \r\n, yet this not not practical because unix only uses \n.
+	return Alts(Concat(cr(), lf()), lf())
 }
 
 // CTL = %x00-1F / %x7F ; controls
