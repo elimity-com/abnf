@@ -7,8 +7,8 @@ func Rune(name string, r rune) Operator {
 		if n := s.nextRune(); n != nil && n[0] == r {
 			s.pointer++
 			return &AST{
-				Name:     name,
-				Raw:      n,
+				Key:      name,
+				Value:    n,
 				Children: nil,
 			}
 		}
@@ -26,8 +26,8 @@ func Runes(name string, rs ...rune) Operator {
 			if n[0] == r {
 				s.pointer++
 				return &AST{
-					Name:     name,
-					Raw:      n,
+					Key:      name,
+					Value:    n,
 					Children: nil,
 				}
 			}
@@ -57,8 +57,8 @@ func Concat(name string, r ...Operator) Operator {
 			children[i] = *n
 		}
 		return &AST{
-			Name:     name,
-			Raw:      s.commitValue(),
+			Key:      name,
+			Value:    s.commitValue(),
 			Children: children,
 		}
 	}
@@ -73,15 +73,15 @@ func Alts(name string, r ...Operator) Operator {
 			if n == nil {
 				continue
 			}
-			if s := len(n.Raw); s > size {
+			if s := len(n.Value); s > size {
 				alt = n
 				size = s
 			}
 		}
 		if alt != nil {
 			return &AST{
-				Name:     name,
-				Raw:      alt.Raw,
+				Key:      name,
+				Value:    alt.Value,
 				Children: []AST{*alt},
 			}
 		}
@@ -94,8 +94,8 @@ func Range(name string, l, h rune) Operator {
 		if r := s.nextRune(); r != nil && l <= r[0] && r[0] <= h {
 			s.pointer++
 			return &AST{
-				Name:     name,
-				Raw:      r,
+				Key:      name,
+				Value:    r,
 				Children: nil,
 			}
 		}
@@ -132,15 +132,15 @@ func Optional(name string, r Operator) Operator {
 		n := r(s)
 		if n == nil {
 			return &AST{
-				Name:     name,
-				Raw:      nil,
+				Key:      name,
+				Value:    nil,
 				Children: nil,
 			}
 		}
 		return &AST{
-			Name:     name,
-			Raw:      n.Raw,
-			Children: n.Children,
+			Key:      name,
+			Value:    n.Value,
+			Children: []AST{*n},
 		}
 	}
 }
@@ -162,8 +162,8 @@ func repeatRule(name string, s *Scanner, min, max int, r Operator) *AST {
 		return nil
 	}
 	return &AST{
-		Name:     name,
-		Raw:      s.commitValue(),
+		Key:      name,
+		Value:    s.commitValue(),
 		Children: children,
 	}
 }

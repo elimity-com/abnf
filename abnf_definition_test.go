@@ -105,8 +105,8 @@ func TestValues(t *testing.T) {
 				if ast := ParseString(validStr, test.rule); ast == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
-					if !compareRunes(string(ast.Raw), validStr) {
-						t.Errorf("values do not match: %s %s", string(ast.Raw), validStr)
+					if !compareRunes(string(ast.Value), validStr) {
+						t.Errorf("values do not match: %s %s", string(ast.Value), validStr)
 					}
 				}
 

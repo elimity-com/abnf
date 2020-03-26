@@ -136,8 +136,8 @@ func TestRepeat(t *testing.T) {
 				return
 			}
 
-			if len(r.Raw) > 3 {
-				t.Errorf("value too long: %s", string(r.Raw))
+			if len(r.Value) > 3 {
+				t.Errorf("value too long: %s", string(r.Value))
 			}
 		})
 	}
@@ -199,7 +199,7 @@ func TestRepeat1Inf(t *testing.T) {
 				return
 			}
 
-			for _, a := range string(r.Raw) {
+			for _, a := range string(r.Value) {
 				if a != 'a' {
 					t.Errorf("value is not an \"a\": %s", string(a))
 				}
@@ -232,7 +232,7 @@ func TestOptional(t *testing.T) {
 				return
 			}
 
-			str := string(r.Raw)
+			str := string(r.Value)
 			if str != "a" && str != "" {
 				t.Errorf("value does not match empty string or \"a\": %s", str)
 			}
