@@ -9,7 +9,7 @@ func alpha() Operator {
 
 // BIT = "0" / "1"
 func bit() Operator {
-	return Runes(`BIT`, '0', '1')
+	return Alts(`BIT`, Rune(`0`, '0'), Rune(`1`, '1'))
 }
 
 // CHAR = %x01-7F ; any 7-bit US-ASCII character, excluding NUL

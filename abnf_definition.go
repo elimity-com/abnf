@@ -44,7 +44,7 @@ func definedAs(s *Scanner) *AST {
 		Alts(
 			`"=" / "=/"`,
 			Rune(`=`, '='),
-			Runes(`=/`, '=', '/'),
+			Concat(`=/`, Rune(`=`, '='), Rune(`/`, '/')),
 		),
 		repeatCWsp,
 	)(s)

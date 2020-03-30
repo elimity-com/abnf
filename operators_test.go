@@ -28,29 +28,11 @@ func TestRune(t *testing.T) {
 	}
 }
 
-func TestRunes(t *testing.T) {
-	rule := Runes(`a / b / c`, 'a', 'b', 'c')
-	for _, s := range []string{
-		"a",
-		"b",
-		"cba",
-	} {
-		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
-				t.Errorf("no value found for: %s", s)
-			}
-		})
-	}
-
-	if ParseString("d", rule) != nil {
-		t.Errorf("value found for \"d\"")
-	}
-}
-
 func TestString(t *testing.T) {
-	rule := String(`abc`, "abc")
+	rule := String(`abc`, "abc", false)
 	for _, s := range []string{
 		"abc",
+		"aBc",
 		"abc abc",
 	} {
 		t.Run("", func(t *testing.T) {
@@ -58,6 +40,10 @@ func TestString(t *testing.T) {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
+	}
+
+	if ParseString("aBc", String(`abc`, "abc", true)) != nil {
+		t.Errorf("value found for \"aBc\"")
 	}
 
 	if ParseString("a bc", rule) != nil {

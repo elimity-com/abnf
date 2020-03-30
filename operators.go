@@ -1,5 +1,10 @@
 package abnf
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Operator func(s *Scanner) *AST
 
 func Rune(name string, r rune) Operator {
@@ -16,32 +21,34 @@ func Rune(name string, r rune) Operator {
 	}
 }
 
-func Runes(name string, rs ...rune) Operator {
-	return func(s *Scanner) *AST {
-		n := s.nextRune()
-		if n == nil {
-			return nil
+func String(name, str string, caseSensitive bool) Operator {
+	if caseSensitive {
+		return func(s *Scanner) *AST {
+			rules := make([]Operator, len(str))
+			for i, r := range str {
+				rules[i] = Rune(string(r), r)
+			}
+			return Concat(name, rules...)(s)
 		}
-		for _, r := range rs {
-			if n[0] == r {
-				s.pointer++
-				return &AST{
-					Key:      name,
-					Value:    n,
-					Children: nil,
-				}
+	}
+	return func(s *Scanner) *AST {
+		str = strings.ToLower(str)
+		rules := make([]Operator, len(str))
+		for i, r := range str {
+			tmp := r
+			if '\x61' <= tmp && tmp <= '\x7A' {
+				tmp -= '\x20'
+				rules[i] = Alts(
+					fmt.Sprintf("%s / %s", string(tmp), string(r)),
+					Rune(string(tmp), tmp),
+					Rune(string(r), r),
+				)
+			} else {
+				rules[i] = Rune(string(r), r)
 			}
 		}
-		return nil
+		return Concat(name, rules...)(s)
 	}
-}
-
-func String(name, s string) Operator {
-	rules := make([]Operator, len(s))
-	for i, r := range s {
-		rules[i] = Rune(string(r), r)
-	}
-	return Concat(name, rules...)
 }
 
 func Concat(name string, r ...Operator) Operator {
