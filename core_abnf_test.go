@@ -115,7 +115,7 @@ func TestCore(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if ast := ParseString(validStr, test.rule); ast == nil {
+				if ast := test.rule([]rune(validStr)); ast == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
 					if !compareRunes(string(ast.Value), validStr) {
@@ -123,7 +123,7 @@ func TestCore(t *testing.T) {
 					}
 				}
 
-				if invalidStr := invalid.Generate(); ParseString(invalidStr, alpha()) != nil {
+				if invalidStr := invalid.Generate(); alpha()([]rune(invalidStr)) != nil {
 					t.Errorf("value found for: %s", invalidStr)
 				}
 			}

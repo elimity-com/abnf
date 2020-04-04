@@ -46,7 +46,7 @@ func TestDefinition(t *testing.T) {
 	} {
 		for _, s := range test.examples {
 			t.Run(fmt.Sprintf("%s %s", test.name, s), func(t *testing.T) {
-				if value := ParseString(s, test.rule); value == nil {
+				if value := test.rule([]rune(s)); value == nil {
 					t.Errorf("no value found for: %s", s)
 				}
 			})
@@ -102,7 +102,7 @@ func TestValues(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if ast := ParseString(validStr, test.rule); ast == nil {
+				if ast := test.rule([]rune(validStr)); ast == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
 					if !compareRunes(string(ast.Value), validStr) {
@@ -110,7 +110,7 @@ func TestValues(t *testing.T) {
 					}
 				}
 
-				if invalidStr := invalid.Generate(); ParseString(invalidStr, test.rule) != nil {
+				if invalidStr := invalid.Generate(); test.rule([]rune(invalidStr)) != nil {
 					t.Errorf("tree found for: %s", invalidStr)
 				}
 			}
@@ -123,7 +123,7 @@ func TestABNF(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	ruleList := ParseString(string(raw), ruleList)
+	ruleList := ruleList([]rune(string(raw)))
 
 	if l := len(ruleList.Children); l != 16 {
 		t.Errorf("should have 16 rules, got %d", l)

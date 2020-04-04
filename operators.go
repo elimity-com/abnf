@@ -1,20 +1,20 @@
 package abnf
 
 import (
-	"fmt"
 	"strings"
 )
 
-type Operator func(s *Scanner) *AST
+type Operator func([]rune) *AST
 
 func Rune(name string, r rune) Operator {
-	return func(s *Scanner) *AST {
-		if n := s.nextRune(); n != nil && n[0] == r {
-			s.pointer++
+	return func(s []rune) *AST {
+		if len(s) == 0 {
+			return nil
+		}
+		if s[0] == r {
 			return &AST{
-				Key:      name,
-				Value:    n,
-				Children: nil,
+				Key:   name,
+				Value: s[:1],
 			}
 		}
 		return nil
@@ -23,56 +23,56 @@ func Rune(name string, r rune) Operator {
 
 func String(name, str string, caseSensitive bool) Operator {
 	if caseSensitive {
-		return func(s *Scanner) *AST {
-			rules := make([]Operator, len(str))
-			for i, r := range str {
-				rules[i] = Rune(string(r), r)
+		return func(s []rune) *AST {
+			if len(s) < len(str) {
+				return nil
 			}
-			return Concat(name, rules...)(s)
+			if string(s[:len(str)]) == str {
+				return &AST{
+					Key:   name,
+					Value: s[:len(str)],
+				}
+			}
+			return nil
 		}
 	}
-	return func(s *Scanner) *AST {
-		str = strings.ToLower(str)
-		rules := make([]Operator, len(str))
-		for i, r := range str {
-			tmp := r
-			if '\x61' <= tmp && tmp <= '\x7A' {
-				tmp -= '\x20'
-				rules[i] = Alts(
-					fmt.Sprintf("%s / %s", string(tmp), string(r)),
-					Rune(string(tmp), tmp),
-					Rune(string(r), r),
-				)
-			} else {
-				rules[i] = Rune(string(r), r)
+	return func(s []rune) *AST {
+		if len(str) > len(s) {
+			return nil
+		}
+		if strings.ToLower(string(s[:len(str)])) == strings.ToLower(str) {
+			return &AST{
+				Key:   name,
+				Value: s[:len(str)],
 			}
 		}
-		return Concat(name, rules...)(s)
+		return nil
 	}
 }
 
 func Concat(name string, r ...Operator) Operator {
-	return func(s *Scanner) *AST {
-		s.addMarker()
+	return func(s []rune) *AST {
 		children := make([]AST, len(r))
+		tmp, l := s, 0
 		for i, rule := range r {
-			n := rule(s)
-			if n == nil {
-				s.rollbackMarker()
+			child := rule(tmp)
+			if child == nil {
 				return nil
 			}
-			children[i] = *n
+			children[i] = *child
+			l += len(child.Value)
+			tmp = s[l:]
 		}
 		return &AST{
 			Key:      name,
-			Value:    s.commitValue(),
+			Value:    s[:l],
 			Children: children,
 		}
 	}
 }
 
 func Alts(name string, r ...Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		var alt *AST // the (longest) best match
 		var size int // the length of the raw result in alt
 		for _, rule := range r {
@@ -80,9 +80,9 @@ func Alts(name string, r ...Operator) Operator {
 			if n == nil {
 				continue
 			}
-			if s := len(n.Value); s > size {
+			if l := len(n.Value); size < l {
 				alt = n
-				size = s
+				size = l
 			}
 		}
 		if alt != nil {
@@ -97,13 +97,14 @@ func Alts(name string, r ...Operator) Operator {
 }
 
 func Range(name string, l, h rune) Operator {
-	return func(s *Scanner) *AST {
-		if r := s.nextRune(); r != nil && l <= r[0] && r[0] <= h {
-			s.pointer++
+	return func(s []rune) *AST {
+		if len(s) == 0 {
+			return nil
+		}
+		if l <= s[0] && s[0] <= h {
 			return &AST{
-				Key:      name,
-				Value:    r,
-				Children: nil,
+				Key:   name,
+				Value: s[:1],
 			}
 		}
 		return nil
@@ -111,37 +112,36 @@ func Range(name string, l, h rune) Operator {
 }
 
 func Repeat(name string, min, max int, r Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		return repeatRule(name, s, min, max, r)
 	}
 }
 
 func RepeatN(name string, n int, r Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		return repeatRule(name, s, n, n, r)
 	}
 }
 
 func Repeat0Inf(name string, r Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		return repeatRule(name, s, 0, -1, r)
 	}
 }
 
 func Repeat1Inf(name string, r Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		return repeatRule(name, s, 1, -1, r)
 	}
 }
 
 func Optional(name string, r Operator) Operator {
-	return func(s *Scanner) *AST {
+	return func(s []rune) *AST {
 		n := r(s)
 		if n == nil {
 			return &AST{
-				Key:      name,
-				Value:    nil,
-				Children: nil,
+				Key:   name,
+				Value: s[:0],
 			}
 		}
 		return &AST{
@@ -152,25 +152,25 @@ func Optional(name string, r Operator) Operator {
 	}
 }
 
-func repeatRule(name string, s *Scanner, min, max int, r Operator) *AST {
-	s.addMarker()
+func repeatRule(name string, s []rune, min, max int, r Operator) *AST {
 	children := make([]AST, 0)
-	var i int
+	tmp, l, i := s, 0, 0
 	for max < 0 || i < max {
-		n := r(s)
+		n := r(tmp)
 		if n == nil {
 			break
 		}
 		children = append(children, *n)
+		l += len(n.Value)
+		tmp = s[l:]
 		i++
 	}
 	if i < min {
-		s.rollbackMarker()
 		return nil
 	}
 	return &AST{
 		Key:      name,
-		Value:    s.commitValue(),
+		Value:    s[:l],
 		Children: children,
 	}
 }

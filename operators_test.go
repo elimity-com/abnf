@@ -17,13 +17,13 @@ func TestRune(t *testing.T) {
 		"aa",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, a) == nil {
+			if a([]rune(s)) == nil {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if ParseString("b", a) != nil {
+	if a([]rune("b")) != nil {
 		t.Errorf("value found for \"b\"")
 	}
 }
@@ -36,24 +36,24 @@ func TestString(t *testing.T) {
 		"abc abc",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
+			if rule([]rune(s)) == nil {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if ParseString("aBc", String(`abc`, "abc", true)) != nil {
+	if String(`abc`, "abc", true)([]rune("aBc")) != nil {
 		t.Errorf("value found for \"aBc\"")
 	}
 
-	if ParseString("a bc", rule) != nil {
+	if rule([]rune("a bc")) != nil {
 		t.Errorf("value found for \"a bc\"")
 	}
 }
 
 func TestConcat(t *testing.T) {
 	rule := Concat(`abc`, a, b, c)
-	if ParseString("abc", rule) == nil {
+	if rule([]rune("abc")) == nil {
 		t.Errorf("no value found for \"abc\"")
 	}
 
@@ -63,7 +63,7 @@ func TestConcat(t *testing.T) {
 		"cba",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) != nil {
+			if rule([]rune(s)) != nil {
 				t.Errorf("value found for: %s", s)
 			}
 		})
@@ -78,14 +78,18 @@ func TestAlts(t *testing.T) {
 		"abc",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
+			if rule([]rune(s)) == nil {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if ParseString("c", rule) != nil {
+	if rule([]rune("c")) != nil {
 		t.Errorf("value found for \"c\"")
+	}
+
+	if s := Alts(`a / 2a`, a, RepeatN(`2a`, 2, a))([]rune("aa")); string(s.Value) != "aa" {
+		t.Errorf("wrong value found for \"aa\"")
 	}
 }
 
@@ -97,13 +101,13 @@ func TestRange(t *testing.T) {
 		"z",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
+			if rule([]rune(s)) == nil {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if ParseString("&", rule) != nil {
+	if rule([]rune("&")) != nil {
 		t.Errorf("value found for \"&\"")
 	}
 }
@@ -116,7 +120,7 @@ func TestRepeat(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run("", func(t *testing.T) {
-			r := ParseString(s, rule)
+			r := rule([]rune(s))
 			if r == nil {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -128,7 +132,7 @@ func TestRepeat(t *testing.T) {
 		})
 	}
 
-	if ParseString("a", rule) != nil {
+	if rule([]rune("a")) != nil {
 		t.Errorf("value found for \"a\"")
 	}
 }
@@ -141,15 +145,14 @@ func TestRepeatN(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
+			if rule([]rune(s)) == nil {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if ParseString("aaaa", rule) != nil {
+	if rule([]rune("aaaa")) != nil{
 		t.Errorf("value found for \"aaaa\"")
-
 	}
 }
 
@@ -163,7 +166,7 @@ func TestRepeat0Inf(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) == nil {
+			if rule([]rune(s)) == nil{
 				t.Errorf("no value found for: %s", s)
 			}
 		})
@@ -179,7 +182,7 @@ func TestRepeat1Inf(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run("", func(t *testing.T) {
-			r := ParseString(s, rule)
+			r := rule([]rune(s))
 			if r == nil {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -198,7 +201,7 @@ func TestRepeat1Inf(t *testing.T) {
 		"b",
 	} {
 		t.Run("", func(t *testing.T) {
-			if ParseString(s, rule) != nil {
+			if rule([]rune(s)) != nil{
 				t.Errorf("value found for: %s", s)
 			}
 		})
@@ -212,7 +215,7 @@ func TestOptional(t *testing.T) {
 		"",
 	} {
 		t.Run(s, func(t *testing.T) {
-			r := ParseString(s, rule)
+			r := rule([]rune(s))
 			if r == nil {
 				t.Errorf("no value found for: %s", s)
 				return
