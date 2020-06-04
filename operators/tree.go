@@ -27,6 +27,36 @@ func (n *Node) stringRecursive(depth int) string {
 	return str
 }
 
+func (n *Node) Equals(other *Node) error {
+	if n == nil || other == nil {
+		return fmt.Errorf("one of the nodes is nil")
+	}
+
+	if n.Key != other.Key {
+		return fmt.Errorf("keys do not match: %s, %s", n.Key, other.Key)
+	}
+	if len(n.Value) != len(other.Value) {
+		return fmt.Errorf("values do not match: %s, %s", string(n.Value), string(other.Value))
+	}
+	if len(n.Children) != len(other.Children) {
+		return fmt.Errorf("not an equal amount of children: %d, %d", len(n.Children), len(other.Children))
+	}
+
+	for i := range n.Value {
+		if n.Value[i] != other.Value[i] {
+			return fmt.Errorf("value does not match, index %d", i)
+		}
+	}
+
+	for i := range n.Children {
+		if err := n.Children[i].Equals(other.Children[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (n *Node) GetImmediateSubNode(key string) *Node {
 	return n.Children.Get(key, false)
 }
@@ -76,6 +106,19 @@ func (as Alternatives) Best() *Node {
 		}
 	}
 	return best
+}
+
+func (as Alternatives) Equals(other Alternatives) error {
+	if len(as) != len(other) {
+		return fmt.Errorf("not an equal amount of nodes: %d, %d", len(as), len(other))
+	}
+
+	for i, alternative := range as {
+		if err := alternative.Equals(other[i]); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type Operator func([]rune) Alternatives
