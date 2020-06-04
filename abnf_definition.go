@@ -1,8 +1,13 @@
 package abnf
 
+import (
+	"github.com/di-wu/abnf/core"
+	. "github.com/di-wu/abnf/operators"
+)
+
 // RFC 5234: 4. ABNF Definition of ABNF
 
-func ruleList(s []rune) *AST {
+func ruleList(s []rune) Alternatives {
 	return Repeat1Inf(`rulelist`, Alts(
 		`rule / (*c-wsp c-nl)`,
 		rule,
@@ -14,7 +19,7 @@ func ruleList(s []rune) *AST {
 	))(s)
 }
 
-func rule(s []rune) *AST {
+func rule(s []rune) Alternatives {
 	return Concat(
 		`rule`,
 		ruleName,
@@ -24,20 +29,20 @@ func rule(s []rune) *AST {
 	)(s)
 }
 
-func ruleName(s []rune) *AST {
+func ruleName(s []rune) Alternatives {
 	return Concat(
 		`rulename`,
-		alpha(),
+		core.ALPHA(),
 		Repeat0Inf(`*(ALPHA / DIGIT / "-")`, Alts(
 			`ALPHA / DIGIT / "-"`,
-			alpha(),
-			digit(),
+			core.ALPHA(),
+			core.DIGIT(),
 			Rune(`-`, '-'),
 		)),
 	)(s)
 }
 
-func definedAs(s []rune) *AST {
+func definedAs(s []rune) Alternatives {
 	return Concat(
 		`defined-as`,
 		repeatCWsp,
@@ -50,7 +55,7 @@ func definedAs(s []rune) *AST {
 	)(s)
 }
 
-func elements(s []rune) *AST {
+func elements(s []rune) Alternatives {
 	return Concat(
 		`elements`,
 		alternation,
@@ -58,44 +63,44 @@ func elements(s []rune) *AST {
 	)(s)
 }
 
-func cWsp(s []rune) *AST {
+func cWsp(s []rune) Alternatives {
 	return Alts(
 		`c-wsp`,
-		wsp(),
+		core.WSP(),
 		Concat(
 			`c-nl WSP`,
 			cNl,
-			wsp(),
+			core.WSP(),
 		),
 	)(s)
 }
 
-func repeatCWsp(s []rune) *AST {
+func repeatCWsp(s []rune) Alternatives {
 	return Repeat0Inf(`*c-wsp`, cWsp)(s)
 }
 
-func cNl(s []rune) *AST {
+func cNl(s []rune) Alternatives {
 	return Alts(
 		`c-nl`,
 		comment,
-		crlf(),
+		core.CRLF(),
 	)(s)
 }
 
-func comment(s []rune) *AST {
+func comment(s []rune) Alternatives {
 	return Concat(
 		`comment`,
 		Rune(`;`, ';'),
 		Repeat0Inf(`*(WSP / VCHAR) CRLF`, Alts(
 			`WSP / VCHAR`,
-			wsp(),
-			vchar(),
+			core.WSP(),
+			core.VCHAR(),
 		)),
-		crlf(),
+		core.CRLF(),
 	)(s)
 }
 
-func alternation(s []rune) *AST {
+func alternation(s []rune) Alternatives {
 	return Concat(
 		`alternation`,
 		concatenation,
@@ -109,7 +114,7 @@ func alternation(s []rune) *AST {
 	)(s)
 }
 
-func concatenation(s []rune) *AST {
+func concatenation(s []rune) Alternatives {
 	return Concat(
 		`concatenation`,
 		repetition,
@@ -121,7 +126,7 @@ func concatenation(s []rune) *AST {
 	)(s)
 }
 
-func repetition(s []rune) *AST {
+func repetition(s []rune) Alternatives {
 	return Concat(
 		`repetition`,
 		Optional(`[repeat]`, repeat),
@@ -129,20 +134,20 @@ func repetition(s []rune) *AST {
 	)(s)
 }
 
-func repeat(s []rune) *AST {
+func repeat(s []rune) Alternatives {
 	return Alts(
 		`repeat`,
-		Repeat1Inf(`1*DIGIT`, digit()),
+		Repeat1Inf(`1*DIGIT`, core.DIGIT()),
 		Concat(
 			`*DIGIT "*" *DIGIT`,
-			Repeat0Inf(`*DIGIT`, digit()),
+			Repeat0Inf(`*DIGIT`, core.DIGIT()),
 			Rune(`*`, '*'),
-			Repeat0Inf(`*DIGIT`, digit()),
+			Repeat0Inf(`*DIGIT`, core.DIGIT()),
 		),
 	)(s)
 }
 
-func element(s []rune) *AST {
+func element(s []rune) Alternatives {
 	return Alts(
 		`element`,
 		ruleName,
@@ -154,7 +159,7 @@ func element(s []rune) *AST {
 	)(s)
 }
 
-func group(s []rune) *AST {
+func group(s []rune) Alternatives {
 	return Concat(
 		`group`,
 		Rune(`(`, '('),
@@ -165,7 +170,7 @@ func group(s []rune) *AST {
 	)(s)
 }
 
-func option(s []rune) *AST {
+func option(s []rune) Alternatives {
 	return Concat(
 		`option`,
 		Rune(`[`, '['),
@@ -176,63 +181,63 @@ func option(s []rune) *AST {
 	)(s)
 }
 
-func charVal(s []rune) *AST {
+func charVal(s []rune) Alternatives {
 	return Concat(
-		`char-val`,
-		dquote(),
+		`CHAR-val`,
+		core.DQUOTE(),
 		Repeat0Inf(`*(%x20-21 / %x23-7E)`, Alts(
 			`%x20-21 / %x23-7E`,
 			Range(`%x20-21`, '\x20', '\x21'),
 			Range(`%x23-7E`, '\x23', '\x7E'),
 		)),
-		dquote(),
+		core.DQUOTE(),
 	)(s)
 }
 
-func numVal(s []rune) *AST {
+func numVal(s []rune) Alternatives {
 	return Concat(
 		`num-val`,
 		Rune(`%`, '%'),
 		Alts(`bin-val / dec-val / hex-val`, binVal, decVal, hexVal))(s)
 }
 
-func binVal(s []rune) *AST {
+func binVal(s []rune) Alternatives {
 	return Concat(`bin-val`,
 		Rune(`b`, 'b'),
-		Repeat1Inf(`1*BIT`, bit()),
+		Repeat1Inf(`1*BIT`, core.BIT()),
 		Optional(`[1*("." 1*BIT) / ("-" 1*BIT)]`, Alts(
 			`1*("." 1*BIT) / ("-" 1*BIT)`,
-			Repeat1Inf(`1*("." 1*BIT)`, Concat(`"." 1*BIT`, Rune(`.`, '.'), Repeat1Inf(`1*BIT`, bit()))),
-			Concat(`"-" 1*BIT`, Rune(`-`, '-'), Repeat1Inf(`1*BIT`, bit())),
+			Repeat1Inf(`1*("." 1*BIT)`, Concat(`"." 1*BIT`, Rune(`.`, '.'), Repeat1Inf(`1*BIT`, core.BIT()))),
+			Concat(`"-" 1*BIT`, Rune(`-`, '-'), Repeat1Inf(`1*BIT`, core.BIT())),
 		)),
 	)(s)
 }
 
-func decVal(s []rune) *AST {
+func decVal(s []rune) Alternatives {
 	return Concat(`dec-val`,
 		Rune(`d`, 'd'),
-		Repeat1Inf(`1*DIGIT`, digit()),
+		Repeat1Inf(`1*DIGIT`, core.DIGIT()),
 		Optional(`[1*("." 1*DIGIT) / ("-" 1*DIGIT)]`, Alts(
 			`1*("." 1*DIGIT) / ("-" 1*DIGIT)`,
-			Repeat1Inf(`1*("." 1*DIGIT)`, Concat(`"." 1*DIGIT`, Rune(`.`, '.'), Repeat1Inf(`1*DIGIT`, digit()))),
-			Concat(`"-" 1*DIGIT`, Rune(`-`, '-'), Repeat1Inf(`1*DIGIT`, digit())),
+			Repeat1Inf(`1*("." 1*DIGIT)`, Concat(`"." 1*DIGIT`, Rune(`.`, '.'), Repeat1Inf(`1*DIGIT`, core.DIGIT()))),
+			Concat(`"-" 1*DIGIT`, Rune(`-`, '-'), Repeat1Inf(`1*DIGIT`, core.DIGIT())),
 		)),
 	)(s)
 }
 
-func hexVal(s []rune) *AST {
+func hexVal(s []rune) Alternatives {
 	return Concat(`hex-val`,
 		Rune(`x`, 'x'),
-		Repeat1Inf(`1*HEXDIG`, hexdig()),
+		Repeat1Inf(`1*HEXDIG`, core.HEXDIG()),
 		Optional(`[1*("." 1*HEXDIG) / ("-" 1*HEXDIG)]`, Alts(
 			`1*("." 1*HEXDIG) / ("-" 1*HEXDIG)`,
-			Repeat1Inf(`1*("." 1*HEXDIG)`, Concat(`"." 1*HEXDIG`, Rune(`.`, '.'), Repeat1Inf(`1*HEXDIG`, hexdig()))),
-			Concat(`"-" 1*HEXDIG`, Rune(`-`, '-'), Repeat1Inf(`1*HEXDIG`, hexdig())),
+			Repeat1Inf(`1*("." 1*HEXDIG)`, Concat(`"." 1*HEXDIG`, Rune(`.`, '.'), Repeat1Inf(`1*HEXDIG`, core.HEXDIG()))),
+			Concat(`"-" 1*HEXDIG`, Rune(`-`, '-'), Repeat1Inf(`1*HEXDIG`, core.HEXDIG())),
 		)),
 	)(s)
 }
 
-func proseVal(s []rune) *AST {
+func proseVal(s []rune) Alternatives {
 	return Concat(
 		`prose-val`,
 		Rune(`<`, '<'),

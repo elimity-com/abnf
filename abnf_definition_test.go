@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	. "github.com/di-wu/abnf/operators"
 	"github.com/di-wu/regen"
 )
 
@@ -38,7 +39,7 @@ func TestDefinition(t *testing.T) {
 				`rule-name`, // rule name
 				`( %x01 )`,  // group
 				`[ %x01 ]`,  // option
-				`"charval"`, // char value
+				`"charval"`, // CHAR value
 				`%x01`,      // numerical value
 				`<abc>`,     // prose value
 			},
@@ -102,11 +103,11 @@ func TestValues(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if ast := test.rule([]rune(validStr)); ast == nil {
+				if nodes := test.rule([]rune(validStr)); nodes == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
-					if !compareRunes(string(ast.Value), validStr) {
-						t.Errorf("values do not match: %s %s", string(ast.Value), validStr)
+					if best := nodes.Best(); !compareRunes(string(best.Value), validStr) {
+						t.Errorf("values do not match: %s %s", string(best.Value), validStr)
 					}
 				}
 
@@ -123,21 +124,23 @@ func TestABNF(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	ruleList := ruleList([]rune(string(raw)))
+	strABNF := string(raw)
+	list := ruleList([]rune(strABNF)).Best()
 
-	if l := len(ruleList.Children); l != 16 {
-		t.Errorf("should have 16 rules, got %d", l)
+	if list.String() != strABNF {
+		t.Error("parsed abnf does not match original")
 	}
+}
 
-	if l := len(ruleList.GetAllNodes("=")); l != 16 {
-		t.Errorf("should have 16 =, got %d", l)
-	}
 
-	if l := len(ruleList.GetAllNodes("comment")); l != 22 {
-		t.Errorf("should have 22 comments, got %d", l)
+func compareRunes(a, b string) bool {
+	if len(a) != len(b) {
+		return false
 	}
-
-	if l := len(ruleList.GetAllNodes("CRLF")); l != 34 {
-		t.Errorf("should have 34 EOLs, got %d", l)
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
 	}
+	return true
 }
