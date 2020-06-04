@@ -1,6 +1,6 @@
 package core
 
-import . "github.com/di-wu/abnf/operators"
+import . "github.com/elimity-com/abnf/operators"
 
 // : Appendix B. Core ABNF of ABNF
 

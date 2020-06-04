@@ -1,8 +1,8 @@
 package abnf
 
 import (
-	"github.com/di-wu/abnf/core"
-	. "github.com/di-wu/abnf/operators"
+	"github.com/elimity-com/abnf/core"
+	. "github.com/elimity-com/abnf/operators"
 )
 
 // RFC 5234: 4. ABNF Definition of ABNF

@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	. "github.com/di-wu/abnf/operators"
 	"github.com/di-wu/regen"
+	. "github.com/elimity-com/abnf/operators"
 )
 
 func TestDefinition(t *testing.T) {

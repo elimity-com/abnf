@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	. "github.com/di-wu/abnf/operators"
 	"github.com/di-wu/regen"
+	. "github.com/elimity-com/abnf/operators"
 )
 
 func TestCore(t *testing.T) {
