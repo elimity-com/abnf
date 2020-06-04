@@ -12,8 +12,8 @@ func ruleList(s []rune) Alternatives {
 		`rule / (*c-wsp c-nl)`,
 		rule,
 		Concat(
-			`*c-wsp c-nl`,
-			repeatCWsp,
+			`*WSP c-nl`,
+			repeatWSP,
 			cNl,
 		),
 	))(s)
@@ -59,7 +59,7 @@ func elements(s []rune) Alternatives {
 	return Concat(
 		`elements`,
 		alternation,
-		repeatCWsp,
+		repeatWSP,
 	)(s)
 }
 
@@ -73,6 +73,10 @@ func cWsp(s []rune) Alternatives {
 			core.WSP(),
 		),
 	)(s)
+}
+
+func repeatWSP(s []rune) Alternatives {
+	return Repeat0Inf(`*WSP`, core.WSP())(s)
 }
 
 func repeatCWsp(s []rune) Alternatives {
