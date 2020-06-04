@@ -1,2 +1,4 @@
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/di-wu/regen v0.0.0-20191224153906-041b1bce4065 h1:Iov2tpNADzF5m/JwT+c1A8u40GmJKpmZp9Sb3jrPIPI=
 github.com/di-wu/regen v0.0.0-20191224153906-041b1bce4065/go.mod h1:1AGOmC2ExxkWjWb7bQNwFD2+0PxttZRYlLeUayrARus=
