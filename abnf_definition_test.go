@@ -131,7 +131,7 @@ func TestABNF(t *testing.T) {
 		t.Error("parsed abnf does not match original")
 	}
 
-	if l := len(list.Children); l != 16 {
+	if l := len(list.GetSubNodes("rule")); l != 16 {
 		t.Errorf("should have 16 rules, got %d", l)
 	}
 
@@ -139,12 +139,12 @@ func TestABNF(t *testing.T) {
 		t.Errorf("should have 16 =, got %d", l)
 	}
 
-	if l := len(list.GetSubNodes("comment")); l != 0 {
-		t.Errorf("should have no comments, got %d", l)
+	if l := len(list.GetSubNodes("comment")); l != 22 {
+		t.Errorf("should have 22 comments, got %d", l)
 	}
 
-	if l := len(list.GetSubNodes("CRLF")); l != 16 {
-		t.Errorf("should have 16 EOLs, got %d", l)
+	if l := len(list.GetSubNodes("CRLF")); l != 34 {
+		t.Errorf("should have 34 EOLs, got %d", l)
 	}
 }
 
