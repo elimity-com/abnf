@@ -8,7 +8,10 @@ func Repeat(key string, min, max int, r Operator) Operator {
 			if max < 0 || i < max {
 				subNodes := r(s[l:])
 				for _, node := range subNodes {
-					nodes = append(nodes, repeat(i+1, l+len(node.Value))...)
+					for _, n := range repeat(i+1, l+len(node.Value)) {
+						n.Children = append([]*Node{node}, n.Children...)
+						nodes = append(nodes, n)
+					}
 				}
 			}
 			if i < min {
@@ -18,12 +21,6 @@ func Repeat(key string, min, max int, r Operator) Operator {
 				Key:   key,
 				Value: s[:l],
 			}
-
-			// add node to all parents
-			for _, n := range nodes {
-				n.Children = append(n.Children, &node)
-			}
-
 			return append(nodes, &node)
 		}
 		return repeat(0, 0)

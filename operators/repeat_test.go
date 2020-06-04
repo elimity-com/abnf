@@ -149,7 +149,7 @@ func TestRepeatChildren(t *testing.T) {
 			nodes := rule([]rune("aa"))
 			for _, node := range nodes {
 				if len(node.Children) != len(string(node.Value)) {
-					t.Error("not enough children")
+					t.Errorf("not the correct amount of children: %d, %d", len(node.Children), len(node.Value))
 				}
 			}
 		})
