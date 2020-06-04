@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/di-wu/abnf/operators"
@@ -150,4 +151,391 @@ func compareRunes(a, b string) bool {
 		}
 	}
 	return true
+}
+
+func TestNode(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		rule    Operator
+		str     string
+		correct Alternatives
+	}{
+		{
+			name: "Alpha Lower",
+			rule: ALPHA(),
+			str:  "a",
+			correct: Alternatives{
+				{
+					Key:   "ALPHA",
+					Value: []rune("a"),
+					Children: Children{
+						{
+							Key:   "a-z",
+							Value: []rune("a"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Alpha Upper",
+			rule: ALPHA(),
+			str:  "Z",
+			correct: Alternatives{
+				{
+					Key:   "ALPHA",
+					Value: []rune("Z"),
+					Children: Children{
+						{
+							Key:   "A-Z",
+							Value: []rune("Z"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Bit 0",
+			rule: BIT(),
+			str:  "0",
+			correct: Alternatives{
+				{
+					Key:   "BIT",
+					Value: []rune("0"),
+					Children: Children{
+						{
+							Key:   "0",
+							Value: []rune("0"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Bit 1",
+			rule: BIT(),
+			str:  "1",
+			correct: Alternatives{
+				{
+					Key:   "BIT",
+					Value: []rune("1"),
+					Children: Children{
+						{
+							Key:   "1",
+							Value: []rune("1"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Character",
+			rule: CHAR(),
+			str:  "~",
+			correct: Alternatives{
+				{
+					Key:   "CHAR",
+					Value: []rune("~"),
+				},
+			},
+		},
+		{
+			name: "NewLine",
+			rule: CRLF(),
+			str:  "\r\n",
+			correct: Alternatives{
+				{
+					Key:   "CRLF",
+					Value: []rune("\r\n"),
+					Children: Children{
+						{
+							Key:   "CR LF",
+							Value: []rune("\r\n"),
+							Children: Children{
+								{
+									Key:   "CR",
+									Value: []rune("\r"),
+								},
+								{
+									Key:   "LF",
+									Value: []rune("\n"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "NewLine Unix",
+			rule: CRLF(),
+			str:  "\n",
+			correct: Alternatives{
+				{
+					Key:   "CRLF",
+					Value: []rune("\n"),
+					Children: Children{
+						{
+							Key:   "LF",
+							Value: []rune("\n"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Control",
+			rule: CTL(),
+			str:  "\u001B", // escape
+			correct: Alternatives{
+				{
+					Key:   "CTL",
+					Value: []rune("\u001B"),
+					Children: Children{
+						{
+							Key:   "%x00-1F",
+							Value: []rune("\u001B"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Digit",
+			rule: DIGIT(),
+			str:  "7",
+			correct: Alternatives{
+				{
+					Key:   "DIGIT",
+					Value: []rune("7"),
+				},
+			},
+		},
+		{
+			name: "DoubleQuote",
+			rule: DQUOTE(),
+			str:  "\"",
+			correct: Alternatives{
+				{
+					Key:   "DQUOTE",
+					Value: []rune("\""),
+				},
+			},
+		},
+		{
+			name: "HexDigit Digit",
+			rule: HEXDIG(),
+			str:  "7",
+			correct: Alternatives{
+				{
+					Key:   "HEXDIG",
+					Value: []rune("7"),
+					Children: Children{
+						{
+							Key:   "DIGIT",
+							Value: []rune("7"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "HexDigit Hex",
+			rule: HEXDIG(),
+			str:  "A",
+			correct: Alternatives{
+				{
+					Key:   "HEXDIG",
+					Value: []rune("A"),
+					Children: Children{
+						{
+							Key:   "A",
+							Value: []rune("A"),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "HorizontalTab",
+			rule: HTAB(),
+			str:  "\t",
+			correct: Alternatives{
+				{
+					Key:   "HTAB",
+					Value: []rune("\t"),
+				},
+			},
+		},
+		{
+			name: "Linefeed",
+			rule: LF(),
+			str:  "\n",
+			correct: Alternatives{
+				{
+					Key:   "LF",
+					Value: []rune("\n"),
+				},
+			},
+		},
+		{
+			name: "LinearWhiteSpace Space",
+			rule: LWSP(),
+			str:  " ",
+			correct: Alternatives{
+				{
+					Key:   "LWSP",
+					Value: []rune(" "),
+					Children: Children{
+						{
+							Key:   "WSP / CRLF WSP",
+							Value: []rune(" "),
+							Children: Children{
+								{
+									Key:   "WSP",
+									Value: []rune(" "),
+									Children: Children{
+										{
+											Key:   "SP",
+											Value: []rune(" "),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Key:   "LWSP",
+					Value: []rune(""),
+				},
+			},
+		},
+		{
+			name: "LinearWhiteSpace EmptyLine",
+			rule: LWSP(),
+			str:  "\n ",
+			correct: Alternatives{
+				{
+					Key:   "LWSP",
+					Value: []rune("\n "),
+					Children: Children{
+						{
+							Key:   "WSP / CRLF WSP",
+							Value: []rune("\n "),
+							Children: Children{
+								{
+									Key:   "CRLF WSP",
+									Value: []rune("\n "),
+									Children: Children{
+										{
+											Key:   "CRLF",
+											Value: []rune("\n"),
+											Children: Children{
+												{
+													Key:   "LF",
+													Value: []rune("\n"),
+												},
+											},
+										},
+										{
+											Key:   "WSP",
+											Value: []rune(" "),
+											Children: Children{
+												{
+													Key:   "SP",
+													Value: []rune(" "),
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Key:   "LWSP",
+					Value: []rune(""),
+				},
+			},
+		},
+		{
+			name: "Octet",
+			rule: OCTET(),
+			str:  "o",
+			correct: Alternatives{
+				{
+					Key:   "OCTET",
+					Value: []rune("o"),
+				},
+			},
+		},
+		{
+			name: "Space",
+			rule: SP(),
+			str:  " ",
+			correct: Alternatives{
+				{
+					Key:   "SP",
+					Value: []rune(" "),
+				},
+			},
+		},
+		{
+			name: "VisibleCharacters",
+			rule: VCHAR(),
+			str:  "~",
+			correct: Alternatives{
+				{
+					Key:   "VCHAR",
+					Value: []rune("~"),
+				},
+			},
+		},
+		{
+			name: "WhiteSpace Space",
+			rule: WSP(),
+			str:  " ",
+			correct: Alternatives{
+				{
+					Key:   "WSP",
+					Value: []rune(" "),
+					Children: Children{
+						{
+							Key: "SP",
+							Value: []rune(" "),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "WhiteSpace Tab",
+			rule: WSP(),
+			str:  "\t",
+			correct: Alternatives{
+				{
+					Key:   "WSP",
+					Value: []rune("\t"),
+					Children: Children{
+						{
+							Key: "HTAB",
+							Value: []rune("\t"),
+						},
+					},
+				},
+			},
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			nodes := test.rule([]rune(test.str))
+			if err := nodes.Equals(test.correct); err != nil {
+				for _, node := range nodes {
+					fmt.Print(node.StringRecursive())
+				}
+				t.Error(err)
+			}
+		})
+	}
 }

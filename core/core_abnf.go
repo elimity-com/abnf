@@ -2,11 +2,11 @@ package core
 
 import . "github.com/di-wu/abnf/operators"
 
-// RFC 5234: Appendix B. Core ABNF of ABNF
+// : Appendix B. Core ABNF of ABNF
 
 // ALPHA = %x41-5A / %x61-7A ; A-Z / a-z
 func ALPHA() Operator {
-	return Alts(`ALPHA`, Range(`%x41-5A`, '\x41', '\x5A'), Range(`%x61-7A`, '\x61', '\x7A'))
+	return Alts(`ALPHA`, Range(`A-Z`, '\x41', '\x5A'), Range(`a-z`, '\x61', '\x7A'))
 }
 
 // BIT = "0" / "1"
@@ -67,7 +67,12 @@ func LF() Operator {
 // no longer legal in mail headers and have caused interoperability problems in other contexts. Do not use when
 // defining mail headers and use with caution in other contexts.
 func LWSP() Operator {
-	return Repeat0Inf(`LWSP`, Alts(`WSP / CRLF WSP`, WSP(), Concat(`CRLF WSP`, CRLF(), WSP())))
+	return Repeat0Inf(`LWSP`,
+		Alts(`WSP / CRLF WSP`,
+			WSP(),
+			Concat(`CRLF WSP`, CRLF(), WSP()),
+		),
+	)
 }
 
 // OCTET = %x00-FF ; 8 bits of data
