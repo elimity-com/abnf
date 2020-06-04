@@ -130,8 +130,23 @@ func TestABNF(t *testing.T) {
 	if list.String() != strABNF {
 		t.Error("parsed abnf does not match original")
 	}
-}
 
+	if l := len(list.Children); l != 16 {
+		t.Errorf("should have 16 rules, got %d", l)
+	}
+
+	if l := len(list.GetSubNodes("=")); l != 16 {
+		t.Errorf("should have 16 =, got %d", l)
+	}
+
+	if l := len(list.GetSubNodes("comment")); l != 0 {
+		t.Errorf("should have no comments, got %d", l)
+	}
+
+	if l := len(list.GetSubNodes("CRLF")); l != 16 {
+		t.Errorf("should have 16 EOLs, got %d", l)
+	}
+}
 
 func compareRunes(a, b string) bool {
 	if len(a) != len(b) {
