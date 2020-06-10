@@ -1,9 +1,9 @@
-package generator
+package abnf
 
 import (
 	"fmt"
+
 	"github.com/dave/jennifer/jen"
-	"github.com/elimity-com/abnf"
 )
 
 const operatorsPkg = "github.com/elimity-com/abnf/operators"
@@ -21,6 +21,7 @@ type generator struct {
 	rawABNF     string
 }
 
+// GenerateABNFAsOperators returns a *jen.File containing the given ABNF syntax as Go Operator functions.
 func GenerateABNFAsOperators(packageName, rawABNF string) *jen.File {
 	g := generator{
 		packageName: packageName,
@@ -29,6 +30,7 @@ func GenerateABNFAsOperators(packageName, rawABNF string) *jen.File {
 	return g.generate()
 }
 
+// GenerateABNFAsAlternatives returns a *jen.File containing the given ABNF syntax as Go functions that return Alternatives.
 func GenerateABNFAsAlternatives(packageName, rawABNF string) *jen.File {
 	g := generator{
 		alts:        true,
@@ -51,7 +53,7 @@ func (g generator) generate() *jen.File {
 		returnParameter = "Operator"
 	}
 
-	alternatives := abnf.Rulelist([]rune(g.rawABNF))
+	alternatives := Rulelist([]rune(g.rawABNF))
 	for _, line := range alternatives.Best().Children {
 		if line.Contains("rule") {
 			f.Comment(fmt.Sprintf("%s", formatFuncComment(line.GetSubNode("rule").String())))

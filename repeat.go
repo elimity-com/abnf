@@ -1,9 +1,11 @@
-package generator
+package abnf
 
 import (
-	"github.com/dave/jennifer/jen"
-	"github.com/elimity-com/abnf/operators"
 	"strconv"
+
+	"github.com/elimity-com/abnf/operators"
+
+	"github.com/dave/jennifer/jen"
 )
 
 type rep struct {

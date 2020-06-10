@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/elimity-com/abnf/operators"
+
 	"github.com/di-wu/regen"
-	. "github.com/elimity-com/abnf/operators"
 )
 
 func TestCore(t *testing.T) {
 	for _, test := range []struct {
 		name                     string
 		validRegex, invalidRegex string
-		rule                     Operator
+		rule                     operators.Operator
 		allowsEmpty              bool
 	}{
 		{
@@ -156,19 +157,19 @@ func compareRunes(a, b string) bool {
 func TestNode(t *testing.T) {
 	for _, test := range []struct {
 		name    string
-		rule    Operator
+		rule    operators.Operator
 		str     string
-		correct Alternatives
+		correct operators.Alternatives
 	}{
 		{
 			name: "Alpha Lower",
 			rule: ALPHA(),
 			str:  "a",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "ALPHA",
 					Value: []rune("a"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "%x61-7A",
 							Value: []rune("a"),
@@ -181,11 +182,11 @@ func TestNode(t *testing.T) {
 			name: "Alpha Upper",
 			rule: ALPHA(),
 			str:  "Z",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "ALPHA",
 					Value: []rune("Z"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "%x41-5A",
 							Value: []rune("Z"),
@@ -198,11 +199,11 @@ func TestNode(t *testing.T) {
 			name: "Bit 0",
 			rule: BIT(),
 			str:  "0",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "BIT",
 					Value: []rune("0"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "\"0\"",
 							Value: []rune("0"),
@@ -215,11 +216,11 @@ func TestNode(t *testing.T) {
 			name: "Bit 1",
 			rule: BIT(),
 			str:  "1",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "BIT",
 					Value: []rune("1"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "\"1\"",
 							Value: []rune("1"),
@@ -232,7 +233,7 @@ func TestNode(t *testing.T) {
 			name: "Character",
 			rule: CHAR(),
 			str:  "~",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "CHAR",
 					Value: []rune("~"),
@@ -243,15 +244,15 @@ func TestNode(t *testing.T) {
 			name: "NewLine",
 			rule: CRLF(),
 			str:  "\r\n",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "CRLF",
 					Value: []rune("\r\n"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "CR LF",
 							Value: []rune("\r\n"),
-							Children: Children{
+							Children: operators.Children{
 								{
 									Key:   "CR",
 									Value: []rune("\r"),
@@ -270,11 +271,11 @@ func TestNode(t *testing.T) {
 			name: "NewLine Unix",
 			rule: CRLF(),
 			str:  "\n",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "CRLF",
 					Value: []rune("\n"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "LF",
 							Value: []rune("\n"),
@@ -287,11 +288,11 @@ func TestNode(t *testing.T) {
 			name: "Control",
 			rule: CTL(),
 			str:  "\u001B", // escape
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "CTL",
 					Value: []rune("\u001B"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "%x00-1F",
 							Value: []rune("\u001B"),
@@ -304,7 +305,7 @@ func TestNode(t *testing.T) {
 			name: "Digit",
 			rule: DIGIT(),
 			str:  "7",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "DIGIT",
 					Value: []rune("7"),
@@ -315,7 +316,7 @@ func TestNode(t *testing.T) {
 			name: "DoubleQuote",
 			rule: DQUOTE(),
 			str:  "\"",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "DQUOTE",
 					Value: []rune("\""),
@@ -326,11 +327,11 @@ func TestNode(t *testing.T) {
 			name: "HexDigit Digit",
 			rule: HEXDIG(),
 			str:  "7",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "HEXDIG",
 					Value: []rune("7"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "DIGIT",
 							Value: []rune("7"),
@@ -343,11 +344,11 @@ func TestNode(t *testing.T) {
 			name: "HexDigit Hex",
 			rule: HEXDIG(),
 			str:  "A",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "HEXDIG",
 					Value: []rune("A"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "\"A\"",
 							Value: []rune("A"),
@@ -360,7 +361,7 @@ func TestNode(t *testing.T) {
 			name: "HorizontalTab",
 			rule: HTAB(),
 			str:  "\t",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "HTAB",
 					Value: []rune("\t"),
@@ -371,7 +372,7 @@ func TestNode(t *testing.T) {
 			name: "Linefeed",
 			rule: LF(),
 			str:  "\n",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "LF",
 					Value: []rune("\n"),
@@ -382,19 +383,19 @@ func TestNode(t *testing.T) {
 			name: "LinearWhiteSpace Space",
 			rule: LWSP(),
 			str:  " ",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "LWSP",
 					Value: []rune(" "),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "WSP / CRLF WSP",
 							Value: []rune(" "),
-							Children: Children{
+							Children: operators.Children{
 								{
 									Key:   "WSP",
 									Value: []rune(" "),
-									Children: Children{
+									Children: operators.Children{
 										{
 											Key:   "SP",
 											Value: []rune(" "),
@@ -415,23 +416,23 @@ func TestNode(t *testing.T) {
 			name: "LinearWhiteSpace EmptyLine",
 			rule: LWSP(),
 			str:  "\n ",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "LWSP",
 					Value: []rune("\n "),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "WSP / CRLF WSP",
 							Value: []rune("\n "),
-							Children: Children{
+							Children: operators.Children{
 								{
 									Key:   "CRLF WSP",
 									Value: []rune("\n "),
-									Children: Children{
+									Children: operators.Children{
 										{
 											Key:   "CRLF",
 											Value: []rune("\n"),
-											Children: Children{
+											Children: operators.Children{
 												{
 													Key:   "LF",
 													Value: []rune("\n"),
@@ -441,7 +442,7 @@ func TestNode(t *testing.T) {
 										{
 											Key:   "WSP",
 											Value: []rune(" "),
-											Children: Children{
+											Children: operators.Children{
 												{
 													Key:   "SP",
 													Value: []rune(" "),
@@ -464,7 +465,7 @@ func TestNode(t *testing.T) {
 			name: "Octet",
 			rule: OCTET(),
 			str:  "o",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "OCTET",
 					Value: []rune("o"),
@@ -475,7 +476,7 @@ func TestNode(t *testing.T) {
 			name: "Space",
 			rule: SP(),
 			str:  " ",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "SP",
 					Value: []rune(" "),
@@ -486,7 +487,7 @@ func TestNode(t *testing.T) {
 			name: "VisibleCharacters",
 			rule: VCHAR(),
 			str:  "~",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "VCHAR",
 					Value: []rune("~"),
@@ -497,11 +498,11 @@ func TestNode(t *testing.T) {
 			name: "WhiteSpace Space",
 			rule: WSP(),
 			str:  " ",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "WSP",
 					Value: []rune(" "),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "SP",
 							Value: []rune(" "),
@@ -514,11 +515,11 @@ func TestNode(t *testing.T) {
 			name: "WhiteSpace Tab",
 			rule: WSP(),
 			str:  "\t",
-			correct: Alternatives{
+			correct: operators.Alternatives{
 				{
 					Key:   "WSP",
 					Value: []rune("\t"),
-					Children: Children{
+					Children: operators.Children{
 						{
 							Key:   "HTAB",
 							Value: []rune("\t"),

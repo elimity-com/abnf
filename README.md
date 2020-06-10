@@ -1,6 +1,30 @@
 # Augmented BNF for Syntax Specifications: ABNF
+Internet technical specifications often need to define a formal syntax and are free to employ whatever notation their 
+authors deem useful. Over the years, a modified version of Backus-Naur Form (BNF), called Augmented BNF (ABNF), has been
+popular among many Internet specifications. It balances compactness and simplicity with reasonable representational power.
+
 [RFC 5234](https://tools.ietf.org/html/rfc5234)
 
+## Contents
+### Generator
+Both the [Core ABNF](./core/core_abnf.go) and the [ABNF Definition](./abnf_definition.go) contained within this package 
+where created by the generator.
+```go
+rawABNF, _ := ioutil.ReadFile("./testdata/core.abnf")
+f := GenerateABNFAsOperators("core", string(rawABNF))
+_ = ioutil.WriteFile("./core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+```
+##### (Currently) Not Supported
+- free-form prose
+- incremental alternatives
+
+### [Operators](https://godoc.org/github.com/elimity-com/abnf/operators)
+Elements form a sequence of one or more rule names and/or value definitions, combined according to the various operators
+defined in this package, such as alternative and repetition.
+### [Core ABNF](https://godoc.org/github.com/elimity-com/abnf/core)
+"Core" rules that are used variously among higher-level rules. The "core" rules might be formed into a lexical analyzer 
+or simply be part of the main ruleset.
+   
 ## EOL
 Text files created on DOS/Windows machines have different line endings than files created on Unix/Linux. 
 DOS uses carriage return and line feed (`\r\n`) as a line ending, which Unix uses just line feed (`\n`).

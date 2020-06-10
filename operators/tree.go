@@ -6,16 +6,19 @@ import (
 	"strings"
 )
 
+// Node represents a single node in a tree.
 type Node struct {
 	Key      string
 	Value    []rune
 	Children Children
 }
 
+// String returns the string representation of the node without new lines and duplicate spaces.
 func (n *Node) String() string {
 	return regexp.MustCompile(`\s+`).ReplaceAllString(string(n.Value), " ")
 }
 
+// StringRecursive returns the string representation of the whole (sub)tree/
 func (n *Node) StringRecursive() string {
 	return n.stringRecursive(1)
 }
@@ -28,6 +31,7 @@ func (n *Node) stringRecursive(depth int) string {
 	return str
 }
 
+// Equals checks whether the node's values is equal to another's.
 func (n *Node) Equals(other *Node) error {
 	if n == nil || other == nil {
 		return fmt.Errorf("one of the nodes is nil")
@@ -58,14 +62,18 @@ func (n *Node) Equals(other *Node) error {
 	return nil
 }
 
+// IsEmpty returns whether the node has no value.
 func (n *Node) IsEmpty() bool  {
 	return len(n.Value) == 0
 }
 
+
+// GetImmediateSubNode searches the children of the node for the given key and returns that child.
 func (n *Node) GetImmediateSubNode(key string) *Node {
 	return n.Children.Get(key, false)
 }
 
+// GetNode searches itself and ALL the children of the node for the given key and returns that child.
 func (n *Node) GetNode(key string) *Node {
 	if n.Key == key {
 		return n
@@ -73,18 +81,22 @@ func (n *Node) GetNode(key string) *Node {
 	return n.GetSubNode(key)
 }
 
+// GetSubNode searches ALL the children of the node for the given key and returns that child.
 func (n *Node) GetSubNode(key string) *Node {
 	return n.Children.Get(key, true)
 }
 
+// GetSubNode searches ALL the children of the node for the given key and returns all matching children.
 func (n *Node) GetSubNodes(key string) Children {
 	return n.Children.GetAll(key)
 }
 
-func (n *Node) GetSubNodesBefore( key string, before ...string) Children {
-	return n.Children.GetAllBefore(key, before...)
+// GetSubNode searches ALL the children of the node for the given key and returns that child without passing a stop-key.
+func (n *Node) GetSubNodesBefore( key string, stop ...string) Children {
+	return n.Children.GetAllBefore(key, stop...)
 }
 
+// Contains returns whether the subtree contains the given key.
 func (n *Node) Contains(key string) bool {
 	for _, child := range n.Children {
 		if child.Key == key ||
@@ -95,8 +107,10 @@ func (n *Node) Contains(key string) bool {
 	return false
 }
 
+// Children represent the children of a node.
 type Children []*Node
 
+// Get searches the children (recursively) for the given key and returns that child.
 func (c Children) Get(key string, recursive bool) *Node {
 	for _, child := range c {
 		if child.Key == key {
@@ -111,6 +125,7 @@ func (c Children) Get(key string, recursive bool) *Node {
 	return nil
 }
 
+// GetAll returns ALL the children matching the given key.
 func (c Children) GetAll(key string) Children {
 	var nodes Children
 	for _, child := range c {
@@ -122,6 +137,7 @@ func (c Children) GetAll(key string) Children {
 	return nodes
 }
 
+// GetSubNode returns ALL the children matching the given key without passing a stop-key.
 func (c Children) GetAllBefore(key string, before ...string) Children {
 	var nodes Children
 	for _, child := range c {
@@ -139,8 +155,10 @@ func (c Children) GetAllBefore(key string, before ...string) Children {
 	return nodes
 }
 
+// Alternatives represent all alternative solutions for a tree. (Also contains subtrees, etc.)
 type Alternatives []*Node
 
+// Best returns the node with the best (longest) value.
 func (as Alternatives) Best() *Node {
 	best := &Node{}
 	for _, a := range as {
@@ -151,6 +169,7 @@ func (as Alternatives) Best() *Node {
 	return best
 }
 
+// Equals checks whether the nodes are is equal to the given others.
 func (as Alternatives) Equals(other Alternatives) error {
 	if len(as) != len(other) {
 		return fmt.Errorf("not an equal amount of nodes: %d, %d", len(as), len(other))
@@ -164,4 +183,5 @@ func (as Alternatives) Equals(other Alternatives) error {
 	return nil
 }
 
+// Operator represent an ABNF operator.
 type Operator func([]rune) Alternatives
