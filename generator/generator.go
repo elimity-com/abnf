@@ -17,6 +17,13 @@ const operatorsPkg = "github.com/elimity-com/abnf/operators"
 
 var space = regexp.MustCompile(`\s+`)
 
+var multiLineCall = jen.Options{
+	Close:     ")",
+	Multi:     true,
+	Open:      "(",
+	Separator: ",",
+}
+
 func GenerateABNF(packageName, rawABNF string) *jen.File {
 	f := jen.NewFile(packageName)
 
@@ -47,7 +54,7 @@ type generatorNode interface {
 }
 
 type alts struct {
-	key string
+	key      string
 	elements []generatorNode
 }
 
@@ -56,11 +63,12 @@ func (a alts) toJen(k key) jen.Code {
 		return a.elements[0].toJen(k)
 	}
 
-	elements := []jen.Code{jen.Lit(string(k))}
-	for _, e := range a.elements {
-		elements = append(elements, e.toJen(e.getKey()))
-	}
-	return jen.Qual(operatorsPkg, "Alts").Call(elements...)
+	return jen.Qual(operatorsPkg, "Alts").CustomFunc(multiLineCall, func(g *jen.Group) {
+		g.Lit(string(k))
+		for _, e := range a.elements {
+			g.Add(e.toJen(e.getKey()))
+		}
+	})
 }
 
 func (a alts) getKey() key {
@@ -75,13 +83,13 @@ func parseAlts(node *operators.Node) alts {
 		}
 	}
 	return alts{
-		key: node.String(),
+		key:      node.String(),
 		elements: elements,
 	}
 }
 
 type concat struct {
-	key string
+	key      string
 	elements []generatorNode
 }
 
@@ -90,11 +98,12 @@ func (c concat) toJen(k key) jen.Code {
 		return c.elements[0].toJen(k)
 	}
 
-	elements := []jen.Code{jen.Lit(string(k))}
-	for _, e := range c.elements {
-		elements = append(elements, e.toJen(e.getKey()))
-	}
-	return jen.Qual(operatorsPkg, "Concat").Call(elements...)
+	return jen.Qual(operatorsPkg, "Concat").CustomFunc(multiLineCall, func(g *jen.Group) {
+		g.Lit(string(k))
+		for _, e := range c.elements {
+			g.Add(e.toJen(e.getKey()))
+		}
+	})
 }
 
 func (c concat) getKey() key {
@@ -109,7 +118,7 @@ func parseConcat(node *operators.Node) concat {
 		}
 	}
 	return concat{
-		key: node.String(),
+		key:      node.String(),
 		elements: elements,
 	}
 }
