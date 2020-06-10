@@ -170,7 +170,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("a"),
 					Children: Children{
 						{
-							Key:   "a-z",
+							Key:   "%x61-7A",
 							Value: []rune("a"),
 						},
 					},
@@ -187,7 +187,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("Z"),
 					Children: Children{
 						{
-							Key:   "A-Z",
+							Key:   "%x41-5A",
 							Value: []rune("Z"),
 						},
 					},
@@ -204,7 +204,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("0"),
 					Children: Children{
 						{
-							Key:   "0",
+							Key:   "\"0\"",
 							Value: []rune("0"),
 						},
 					},
@@ -221,7 +221,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("1"),
 					Children: Children{
 						{
-							Key:   "1",
+							Key:   "\"1\"",
 							Value: []rune("1"),
 						},
 					},
@@ -349,7 +349,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("A"),
 					Children: Children{
 						{
-							Key:   "A",
+							Key:   "\"A\"",
 							Value: []rune("A"),
 						},
 					},
@@ -503,7 +503,7 @@ func TestNode(t *testing.T) {
 					Value: []rune(" "),
 					Children: Children{
 						{
-							Key: "SP",
+							Key:   "SP",
 							Value: []rune(" "),
 						},
 					},
@@ -520,7 +520,7 @@ func TestNode(t *testing.T) {
 					Value: []rune("\t"),
 					Children: Children{
 						{
-							Key: "HTAB",
+							Key:   "HTAB",
 							Value: []rune("\t"),
 						},
 					},

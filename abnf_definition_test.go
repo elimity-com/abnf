@@ -125,7 +125,7 @@ func TestABNF(t *testing.T) {
 		t.Error(err)
 	}
 	strABNF := string(raw)
-	list := ruleList([]rune(strABNF)).Best()
+	list := RuleList([]rune(strABNF)).Best()
 
 	if list.String() != strABNF {
 		t.Error("parsed abnf does not match original")

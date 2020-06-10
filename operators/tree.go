@@ -57,16 +57,41 @@ func (n *Node) Equals(other *Node) error {
 	return nil
 }
 
+func (n *Node) IsEmpty() bool  {
+	return len(n.Value) == 0
+}
+
 func (n *Node) GetImmediateSubNode(key string) *Node {
 	return n.Children.Get(key, false)
+}
+
+func (n *Node) GetNode(key string) *Node {
+	if n.Key == key {
+		return n
+	}
+	return n.GetSubNode(key)
 }
 
 func (n *Node) GetSubNode(key string) *Node {
 	return n.Children.Get(key, true)
 }
 
-func (n *Node) GetSubNodes(key string) Alternatives {
+func (n *Node) GetSubNodes(key string) Children {
 	return n.Children.GetAll(key)
+}
+
+func (n *Node) GetSubNodesBefore( key, before string) Children {
+	return n.Children.GetAllBefore(key, before)
+}
+
+func (n *Node) Contains(key string) bool {
+	for _, child := range n.Children {
+		if child.Key == key ||
+			child.Contains(key) {
+			return true
+		}
+	}
+	return false
 }
 
 type Children []*Node
@@ -85,13 +110,28 @@ func (c Children) Get(key string, recursive bool) *Node {
 	return nil
 }
 
-func (c Children) GetAll(key string) Alternatives {
-	var nodes Alternatives
+func (c Children) GetAll(key string) Children {
+	var nodes Children
 	for _, child := range c {
 		if child.Key == key {
 			nodes = append(nodes, child)
 		}
 		nodes = append(nodes, child.GetSubNodes(key)...)
+	}
+	return nodes
+}
+
+func (c Children) GetAllBefore(key, before string) Children {
+	var nodes Children
+	for _, child := range c {
+		if child.Key == before {
+			return nodes
+		}
+
+		if child.Key == key {
+			nodes = append(nodes, child)
+		}
+		nodes = append(nodes, child.GetSubNodesBefore(key, before)...)
 	}
 	return nodes
 }

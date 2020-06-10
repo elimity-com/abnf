@@ -7,7 +7,7 @@ import (
 
 // RFC 5234: 4. ABNF Definition of ABNF
 
-func ruleList(s []rune) Alternatives {
+func RuleList(s []rune) Alternatives {
 	return Repeat1Inf(`rulelist`, Alts(
 		`rule / (*c-wsp c-nl)`,
 		rule,
@@ -187,7 +187,7 @@ func option(s []rune) Alternatives {
 
 func charVal(s []rune) Alternatives {
 	return Concat(
-		`CHAR-val`,
+		`char-val`,
 		core.DQUOTE(),
 		Repeat0Inf(`*(%x20-21 / %x23-7E)`, Alts(
 			`%x20-21 / %x23-7E`,

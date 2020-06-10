@@ -1,96 +1,85 @@
+// This file is generated - do not edit.
+
 package core
 
-import . "github.com/elimity-com/abnf/operators"
+import operators "github.com/elimity-com/abnf/operators"
 
-// : Appendix B. Core ABNF of ABNF
-
-// ALPHA = %x41-5A / %x61-7A ; A-Z / a-z
-func ALPHA() Operator {
-	return Alts(`ALPHA`, Range(`A-Z`, '\x41', '\x5A'), Range(`a-z`, '\x61', '\x7A'))
+// ALPHA = %x41-5A / %x61-7A
+func ALPHA() operators.Operator {
+	return operators.Alts("ALPHA", operators.Range("%x41-5A", 65, 90), operators.Range("%x61-7A", 97, 122))
 }
 
 // BIT = "0" / "1"
-func BIT() Operator {
-	return Alts(`BIT`, Rune(`0`, '0'), Rune(`1`, '1'))
+func BIT() operators.Operator {
+	return operators.Alts("BIT", operators.Rune("\"0\"", 48), operators.Rune("\"1\"", 49))
 }
 
-// CHAR = %x01-7F ; any 7-BIT US-ASCII character, excluding NUL
-func CHAR() Operator {
-	return Range(`CHAR`, '\x01', '\x7F')
+// CHAR = %x01-7F
+func CHAR() operators.Operator {
+	return operators.Range("CHAR", 1, 127)
 }
 
-// CR = %x0D ; carriage return
-func CR() Operator {
-	return Rune(`CR`, '\x0D')
+// CR = %x0D
+func CR() operators.Operator {
+	return operators.Rune("CR", 13)
 }
 
-// CRLF = CR LF ; Internet standard newline
-// NOTE: ABNF only allows \r\n, yet this not not practical because unix only uses \n.
-func CRLF() Operator {
-	return Alts(`CRLF`, Concat(`CR LF`, CR(), LF()), LF())
+// CRLF = CR LF / LF
+func CRLF() operators.Operator {
+	return operators.Alts("CRLF", operators.Concat("CR LF", CR(), LF()), LF())
 }
 
-// CTL = %x00-1F / %x7F ; controls
-func CTL() Operator {
-	return Alts(`CTL`, Range(`%x00-1F`, '\x00', '\x1F'), Rune(`%x7F`, '\x7F'))
+// CTL = %x00-1F / %x7F
+func CTL() operators.Operator {
+	return operators.Alts("CTL", operators.Range("%x00-1F", 0, 31), operators.Rune("%x7F", 127))
 }
 
-// DIGIT = %x30-39 ; 0-9
-func DIGIT() Operator {
-	return Range(`DIGIT`, '\x30', '\x39')
+// DIGIT = %x30-39
+func DIGIT() operators.Operator {
+	return operators.Range("DIGIT", 48, 57)
 }
 
-// DQUOTE = %x22 ; " (Double Quote)
-func DQUOTE() Operator {
-	return Rune(`DQUOTE`, '\x22')
+// DQUOTE = %x22
+func DQUOTE() operators.Operator {
+	return operators.Rune("DQUOTE", 34)
 }
 
 // HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
-func HEXDIG() Operator {
-	return Alts(`HEXDIG`, DIGIT(),
-		Rune(`A`, 'A'), Rune(`B`, 'B'), Rune(`C`, 'C'),
-		Rune(`D`, 'D'), Rune(`E`, 'E'), Rune(`F`, 'F'),
-	)
+func HEXDIG() operators.Operator {
+	return operators.Alts("HEXDIG", DIGIT(), operators.Rune("\"A\"", 65), operators.Rune("\"B\"", 66), operators.Rune("\"C\"", 67), operators.Rune("\"D\"", 68), operators.Rune("\"E\"", 69), operators.Rune("\"F\"", 70))
 }
 
-// HTAB = %x09 ; horizontal tab
-func HTAB() Operator {
-	return Rune(`HTAB`, '\x09')
+// HTAB = %x09
+func HTAB() operators.Operator {
+	return operators.Rune("HTAB", 9)
 }
 
-// LF = %x0A ; linefeed
-func LF() Operator {
-	return Rune(`LF`, '\x0A')
+// LF = %x0A
+func LF() operators.Operator {
+	return operators.Rune("LF", 10)
 }
 
-// LWSP = *(WSP / CRLF WSP) ; Use of this linear-white-space rule permits lines containing only white space that are
-// no longer legal in mail headers and have caused interoperability problems in other contexts. Do not use when
-// defining mail headers and use with caution in other contexts.
-func LWSP() Operator {
-	return Repeat0Inf(`LWSP`,
-		Alts(`WSP / CRLF WSP`,
-			WSP(),
-			Concat(`CRLF WSP`, CRLF(), WSP()),
-		),
-	)
+// LWSP = *(WSP / CRLF WSP)
+func LWSP() operators.Operator {
+	return operators.Repeat0Inf("LWSP", operators.Alts("WSP / CRLF WSP", WSP(), operators.Concat("CRLF WSP", CRLF(), WSP())))
 }
 
-// OCTET = %x00-FF ; 8 bits of data
-func OCTET() Operator {
-	return Range(`OCTET`, '\x00', '\xFF')
+// OCTET = %x00-FF
+func OCTET() operators.Operator {
+	return operators.Range("OCTET", 0, 255)
 }
 
 // SP = %x20
-func SP() Operator {
-	return Rune(`SP`, '\x20')
+func SP() operators.Operator {
+	return operators.Rune("SP", 32)
 }
 
-// VCHAR = %x21-7E ; visible (printing) characters
-func VCHAR() Operator {
-	return Range(`VCHAR`, '\x21', '\x7E')
+// VCHAR = %x21-7E
+func VCHAR() operators.Operator {
+	return operators.Range("VCHAR", 33, 126)
 }
 
-// WSP = SP / HTAB ; white space
-func WSP() Operator {
-	return Alts(`WSP`, SP(), HTAB())
+// WSP = SP / HTAB
+func WSP() operators.Operator {
+	return operators.Alts("WSP", SP(), HTAB())
 }
