@@ -1,4 +1,4 @@
-package generator
+package abnf
 
 import (
 	"fmt"
@@ -8,15 +8,15 @@ import (
 )
 
 func TestGenerateCore(t *testing.T) {
-	rawABNF, err := ioutil.ReadFile("../testdata/core.abnf")
+	rawABNF, err := ioutil.ReadFile("./testdata/core.abnf")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	f := GenerateABNFAsOperators("core", string(rawABNF))
-	// _ = ioutil.WriteFile("../core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+	// _ = ioutil.WriteFile("./core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 
-	raw, err := ioutil.ReadFile("../core/core_abnf.go")
+	raw, err := ioutil.ReadFile("./core/core_abnf.go")
 	if err != nil {
 		t.Error(err)
 		return
@@ -45,21 +45,21 @@ func TestGenerateCore(t *testing.T) {
 }
 
 func TestGenerateDefinition(t *testing.T) {
-	rawDef, err := ioutil.ReadFile("../testdata/definition.abnf")
+	rawDef, err := ioutil.ReadFile("./testdata/definition.abnf")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	rawABNF, err := ioutil.ReadFile("../testdata/core.abnf")
+	rawABNF, err := ioutil.ReadFile("./testdata/core.abnf")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	f := GenerateABNFAsAlternatives("abnf", string(rawDef) + string(rawABNF))
-	// _ = ioutil.WriteFile("../abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+	// _ = ioutil.WriteFile("./abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 
-	raw, err := ioutil.ReadFile("../abnf_definition.go")
+	raw, err := ioutil.ReadFile("./abnf_definition.go")
 	if err != nil {
 		t.Error(err)
 		return

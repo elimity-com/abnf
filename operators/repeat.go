@@ -1,5 +1,6 @@
 package operators
 
+// Repeat defines a variable repetition.
 func Repeat(key string, min, max int, r Operator) Operator {
 	return func(s []rune) Alternatives {
 		var repeat func(i, l int) Alternatives
@@ -27,18 +28,22 @@ func Repeat(key string, min, max int, r Operator) Operator {
 	}
 }
 
+// RepeatN defines a specific repetition.
 func RepeatN(key string, n int, r Operator) Operator {
 	return Repeat(key, n, n, r)
 }
 
+// Repeat1Inf defines a specific repetition from 0 to infinity.
 func Repeat0Inf(key string, r Operator) Operator {
 	return Repeat(key, 0, -1, r)
 }
 
+// Repeat0Inf defines a specific repetition from 1 to infinity.
 func Repeat1Inf(key string, r Operator) Operator {
 	return Repeat(key, 1, -1, r)
 }
 
+// RepeatOptional defines a specific repetition from 0 to 1. Behaves the same as Optional.
 func RepeatOptional(key string, r Operator) Operator {
 	return Repeat(key, 0, 1, r)
 }

@@ -1,7 +1,8 @@
-package generator
+package abnf
 
 import (
 	"encoding/hex"
+	"log"
 	"strconv"
 
 	"github.com/elimity-com/abnf/operators"
@@ -108,5 +109,11 @@ func (g generator) parseNumVal(node *operators.Node) generatorNode {
 		key:   child.String(),
 		value: min,
 	}
+	return nil
+}
+
+
+func (g generator) parseProseVal(node *operators.Node) generatorNode {
+	log.Fatal("not implemented, to be used as last resort")
 	return nil
 }

@@ -1,4 +1,4 @@
-package generator
+package abnf
 
 import "github.com/dave/jennifer/jen"
 

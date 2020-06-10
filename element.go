@@ -1,7 +1,8 @@
-package generator
+package abnf
 
 import (
 	"fmt"
+
 	"github.com/elimity-com/abnf/operators"
 )
 
@@ -39,8 +40,6 @@ func (g generator) parseElement(node *operators.Node) generatorNode {
 		return g.parseNumVal(child)
 	case "prose-val":
 		fmt.Println(child)
-	default:
-		fmt.Println(child.Key, child)
 	}
 	return nil
 }
