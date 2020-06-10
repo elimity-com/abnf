@@ -3,21 +3,22 @@ package abnf
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"testing"
 
 	"github.com/di-wu/regen"
-	. "github.com/elimity-com/abnf/operators"
+	"github.com/elimity-com/abnf/operators"
 )
 
 func TestDefinition(t *testing.T) {
 	for _, test := range []struct {
 		name     string
-		rule     Operator
+		rule     operators.Operator
 		examples []string
 	}{
 		{
 			name: "ruleName",
-			rule: ruleName,
+			rule: Rulename,
 			examples: []string{
 				"name",
 				`name123`,
@@ -26,7 +27,7 @@ func TestDefinition(t *testing.T) {
 		},
 		{
 			name: "definedAs",
-			rule: definedAs,
+			rule: DefinedAs,
 			examples: []string{
 				" = ",
 				"=/",
@@ -34,7 +35,7 @@ func TestDefinition(t *testing.T) {
 		},
 		{
 			name: `element`,
-			rule: element,
+			rule: Element,
 			examples: []string{
 				`rule-name`, // rule name
 				`( %x01 )`,  // group
@@ -59,42 +60,42 @@ func TestValues(t *testing.T) {
 	for _, test := range []struct {
 		name                     string
 		validRegex, invalidRegex string
-		rule                     Operator
+		rule                     operators.Operator
 	}{
 		{
 			name:         "CharVal",
 			validRegex:   `"[a-zA-Z]"`,
 			invalidRegex: `[a-zA-Z]`,
-			rule:         charVal,
+			rule:         CharVal,
 		},
 		{
 			name:       "NumVal",
 			validRegex: `%((b[0-1]+(.[0-1]+|-[0-1]+)?)|(d\d+(.\d+|-\d+)?)|(x[0-9A-F]+(.[0-9A-F]+|-[0-9A-F]+)?))`,
-			rule:       numVal,
+			rule:       NumVal,
 		},
 		{
 			name:         "BinVal",
 			validRegex:   `b[0-1]+(.[0-1]+|-[0-1]+)?`,
 			invalidRegex: `[0-1]+(.[0-1]+|-[0-1]+)?`,
-			rule:         binVal,
+			rule:         BinVal,
 		},
 		{
 			name:         "DecVal",
 			validRegex:   `d\d+(.\d+|-\d+)?`,
 			invalidRegex: `\d+(.\d+|-\d+)?`,
-			rule:         decVal,
+			rule:         DecVal,
 		},
 		{
 			name:         "HexVal",
 			validRegex:   `x[0-9A-F]+(.[0-9A-F]+|-[0-9A-F]+)?`,
 			invalidRegex: `[0-9A-F]+(.[0-9A-F]+|-[0-9A-F]+)?`,
-			rule:         hexVal,
+			rule:         HexVal,
 		},
 		{
 			name:         "ProseVal",
 			validRegex:   `<[a-zA-Z]*>`,
 			invalidRegex: `[a-zA-Z]*`,
-			rule:         proseVal,
+			rule:         ProseVal,
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -125,9 +126,9 @@ func TestABNF(t *testing.T) {
 		t.Error(err)
 	}
 	strABNF := string(raw)
-	list := RuleList([]rune(strABNF)).Best()
+	list := Rulelist([]rune(strABNF)).Best()
 
-	if list.String() != strABNF {
+	if list.String() != regexp.MustCompile(`\s+`).ReplaceAllString(strABNF, " ") {
 		t.Error("parsed abnf does not match original")
 	}
 
@@ -135,7 +136,7 @@ func TestABNF(t *testing.T) {
 		t.Errorf("should have 16 rules, got %d", l)
 	}
 
-	if l := len(list.GetSubNodes("=")); l != 16 {
+	if l := len(list.GetSubNodes("\"=\"")); l != 16 {
 		t.Errorf("should have 16 =, got %d", l)
 	}
 

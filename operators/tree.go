@@ -2,6 +2,7 @@ package operators
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -12,7 +13,7 @@ type Node struct {
 }
 
 func (n *Node) String() string {
-	return string(n.Value)
+	return regexp.MustCompile(`\s+`).ReplaceAllString(string(n.Value), " ")
 }
 
 func (n *Node) StringRecursive() string {
@@ -80,8 +81,8 @@ func (n *Node) GetSubNodes(key string) Children {
 	return n.Children.GetAll(key)
 }
 
-func (n *Node) GetSubNodesBefore( key, before string) Children {
-	return n.Children.GetAllBefore(key, before)
+func (n *Node) GetSubNodesBefore( key string, before ...string) Children {
+	return n.Children.GetAllBefore(key, before...)
 }
 
 func (n *Node) Contains(key string) bool {
@@ -121,17 +122,19 @@ func (c Children) GetAll(key string) Children {
 	return nodes
 }
 
-func (c Children) GetAllBefore(key, before string) Children {
+func (c Children) GetAllBefore(key string, before ...string) Children {
 	var nodes Children
 	for _, child := range c {
-		if child.Key == before {
-			return nodes
+		for _, b := range before {
+			if child.Key == b {
+				return nodes
+			}
 		}
 
 		if child.Key == key {
 			nodes = append(nodes, child)
 		}
-		nodes = append(nodes, child.GetSubNodesBefore(key, before)...)
+		nodes = append(nodes, child.GetSubNodesBefore(key, before...)...)
 	}
 	return nodes
 }
