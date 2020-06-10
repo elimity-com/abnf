@@ -3,19 +3,14 @@ package generator
 import (
 	"encoding/hex"
 	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
-
 	"github.com/elimity-com/abnf"
 	"github.com/elimity-com/abnf/operators"
+	"strconv"
 
 	"github.com/dave/jennifer/jen"
 )
 
 const operatorsPkg = "github.com/elimity-com/abnf/operators"
-
-var space = regexp.MustCompile(`\s+`)
 
 var multiLineCall = jen.Options{
 	Close:     ")",
@@ -24,22 +19,62 @@ var multiLineCall = jen.Options{
 	Separator: ",",
 }
 
-func GenerateABNF(packageName, rawABNF string) *jen.File {
-	f := jen.NewFile(packageName)
+type generator struct {
+	alts        bool
+	packageName string
+	rawABNF     string
+}
+
+func GenerateABNFAsOperators(packageName, rawABNF string) *jen.File {
+	g := generator{
+		packageName: packageName,
+		rawABNF:     rawABNF,
+	}
+	return g.Generate()
+}
+
+func GenerateABNFAsAlternatives(packageName, rawABNF string) *jen.File {
+	g := generator{
+		alts:        true,
+		packageName: packageName,
+		rawABNF:     rawABNF,
+	}
+	return g.Generate()
+}
+
+func (g generator) Generate() *jen.File {
+	f := jen.NewFile(g.packageName)
 
 	f.HeaderComment("This file is generated - do not edit.")
 	f.Line()
 
-	alternatives := abnf.RuleList([]rune(rawABNF))
+	var returnParameter string
+	if g.alts {
+		returnParameter = "Alternatives"
+	} else {
+		returnParameter = "Operator"
+	}
+
+	alternatives := abnf.Rulelist([]rune(g.rawABNF))
 	for _, line := range alternatives.Best().Children {
 		if line.Contains("rule") {
-			comment := space.ReplaceAllString(strings.Split(line.GetSubNode("rule").String(), ";")[0], " ")
-			f.Comment(fmt.Sprintf("%s", comment))
+			f.Comment(fmt.Sprintf("%s", formatFuncComment(line.GetSubNode("rule").String())))
 
 			name := line.GetSubNode("rulename").String()
-			node := parseAlts(line.GetSubNode("alternation"))
-			f.Func().Id(name).Call().Qual(operatorsPkg, "Operator").Block(
-				jen.Return(node.toJen(key(name))),
+			node := g.parseAlts(line.GetSubNode("alternation"))
+			var returnValue jen.Code
+			if g.alts {
+				returnValue = jen.Return(node.toJen(key(name))).Call(jen.Id("s"))
+			} else {
+				returnValue = jen.Return(node.toJen(key(name)))
+			}
+
+			var params []jen.Code
+			if g.alts {
+				params = append(params, jen.Id("s").Op("[]").Id("rune"))
+			}
+			f.Func().Id(formatRuleName(name)).Call(params...).Qual(operatorsPkg, returnParameter).Block(
+				returnValue,
 			)
 		}
 	}
@@ -75,11 +110,11 @@ func (a alts) getKey() key {
 	return key(a.key)
 }
 
-func parseAlts(node *operators.Node) alts {
-	elements := []generatorNode{parseConcat(node.GetSubNode("concatenation"))}
-	for _, child := range node.GetSubNodesBefore("*c-wsp \"/\" *c-wsp concatenation", "(") {
+func (g generator) parseAlts(node *operators.Node) alts {
+	elements := []generatorNode{g.parseConcat(node.GetSubNode("concatenation"))}
+	for _, child := range node.GetSubNodesBefore("*c-wsp \"/\" *c-wsp concatenation", "\"(\"", "\"[\"") {
 		if c := child.GetNode("concatenation"); c != nil {
-			elements = append(elements, parseConcat(c))
+			elements = append(elements, g.parseConcat(c))
 		}
 	}
 	return alts{
@@ -110,11 +145,11 @@ func (c concat) getKey() key {
 	return key(c.key)
 }
 
-func parseConcat(node *operators.Node) concat {
-	elements := []generatorNode{parseRep(node.GetSubNode("repetition"))}
-	for _, child := range node.GetSubNodesBefore("1*c-wsp repetition", "(") {
+func (g generator) parseConcat(node *operators.Node) concat {
+	elements := []generatorNode{g.parseRep(node.GetSubNode("repetition"))}
+	for _, child := range node.GetSubNodesBefore("1*c-wsp repetition", "\"(\"", "\"[\"") {
 		if c := child.GetNode("repetition"); c != nil {
-			elements = append(elements, parseRep(c))
+			elements = append(elements, g.parseRep(c))
 		}
 	}
 	return concat{
@@ -124,6 +159,7 @@ func parseConcat(node *operators.Node) concat {
 }
 
 type rep struct {
+	key      string
 	min, max int
 	repeat   bool
 	element  generatorNode
@@ -138,7 +174,7 @@ func (r rep) toJen(k key) jen.Code {
 		return jen.Qual(operatorsPkg, "RepeatN").Call(
 			jen.Lit(string(k)),
 			jen.Lit(r.min),
-			r.element.toJen(r.getKey()),
+			r.element.toJen(r.element.getKey()),
 		)
 	}
 
@@ -147,12 +183,12 @@ func (r rep) toJen(k key) jen.Code {
 		case 0:
 			return jen.Qual(operatorsPkg, "Repeat0Inf").Call(
 				jen.Lit(string(k)),
-				r.element.toJen(r.getKey()),
+				r.element.toJen(r.element.getKey()),
 			)
 		case 1:
 			return jen.Qual(operatorsPkg, "Repeat1Inf").Call(
 				jen.Lit(string(k)),
-				r.element.toJen(r.getKey()),
+				r.element.toJen(r.element.getKey()),
 			)
 		}
 	}
@@ -166,14 +202,15 @@ func (r rep) toJen(k key) jen.Code {
 }
 
 func (r rep) getKey() key {
-	return r.element.getKey()
+	return key(r.key)
 }
 
-func parseRep(node *operators.Node) rep {
+func (g generator) parseRep(node *operators.Node) rep {
 	if node.Children[0].IsEmpty() {
 		return rep{
+			key:     node.String(),
 			repeat:  false,
-			element: parseElement(node.GetSubNode("element")),
+			element: g.parseElement(node.GetSubNode("element")),
 		}
 	}
 
@@ -204,23 +241,29 @@ func parseRep(node *operators.Node) rep {
 	}
 
 	return rep{
+		key:     node.String(),
 		min:     min,
 		max:     max,
 		repeat:  true,
-		element: parseElement(node.GetSubNode("element")),
+		element: g.parseElement(node.GetSubNode("element")),
 	}
 }
 
-func parseElement(node *operators.Node) generatorNode {
+func (g generator) parseElement(node *operators.Node) generatorNode {
 	switch child := node.Children[0]; child.Key {
 	case "rulename":
 		return identifier{
-			value: child.String(),
+			call:  !g.alts,
+			value: formatRuleName(child.String()),
 		}
 	case "group":
-		return parseAlts(child.GetSubNode("alternation"))
+		return g.parseAlts(child.GetSubNode("alternation"))
 	case "option":
-		fmt.Println("option")
+		value := child.GetSubNode("alternation")
+		return optionalValue{
+			key:     value.String(),
+			element: g.parseAlts(value),
+		}
 	case "char-val":
 		values := child.GetSubNodes("%x20-21 / %x23-7E")
 		if len(values) == 1 {
@@ -230,10 +273,14 @@ func parseElement(node *operators.Node) generatorNode {
 				value: int(value.String()[0]),
 			}
 		} else {
-			fmt.Println("oops")
+			value := child.GetSubNode("*(%x20-21 / %x23-7E)")
+			return stringValue{
+				key:   value.String(),
+				value: value.String(),
+			}
 		}
 	case "num-val":
-		return parseNumVal(child)
+		return g.parseNumVal(child)
 	case "prose-val":
 		fmt.Println(child)
 	default:
@@ -242,7 +289,7 @@ func parseElement(node *operators.Node) generatorNode {
 	return nil
 }
 
-func parseNumVal(node *operators.Node) generatorNode {
+func (g generator) parseNumVal(node *operators.Node) generatorNode {
 	switch child := node.Children[1].Children[0]; child.Key {
 	default:
 	case "bin-val":
@@ -256,7 +303,7 @@ func parseNumVal(node *operators.Node) generatorNode {
 			if c := v.GetNode("1*HEXDIG"); c != nil {
 				// TODO: "."
 
-				if v.Contains("-") {
+				if v.Contains("\"-\"") {
 					hyphen = true
 				}
 				raw, _ := hex.DecodeString(c.String())
@@ -277,6 +324,22 @@ func parseNumVal(node *operators.Node) generatorNode {
 		}
 	}
 	return nil
+}
+
+type optionalValue struct {
+	key     string
+	element generatorNode
+}
+
+func (v optionalValue) toJen(k key) jen.Code {
+	return jen.Qual(operatorsPkg, "Optional").Call(
+		jen.Lit(string(k)),
+		v.element.toJen(v.getKey()),
+	)
+}
+
+func (v optionalValue) getKey() key {
+	return v.element.getKey()
 }
 
 type runeValue struct {
@@ -329,11 +392,15 @@ func (v rangeValue) getKey() key {
 }
 
 type identifier struct {
+	call  bool
 	value string
 }
 
 func (i identifier) toJen(_ key) jen.Code {
-	return jen.Id(i.value).Call()
+	if i.call {
+		return jen.Id(i.value).Call()
+	}
+	return jen.Id(i.value)
 }
 
 func (i identifier) getKey() key {
