@@ -14,6 +14,8 @@ func TestGenerateCore(t *testing.T) {
 		return
 	}
 	f := GenerateABNF("core", string(rawABNF))
+	// _ = ioutil.WriteFile("../core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+
 	raw, err := ioutil.ReadFile("../core/core_abnf.go")
 	if err != nil {
 		t.Error(err)
