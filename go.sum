@@ -1,2 +1,4 @@
+github.com/dave/jennifer v1.4.0 h1:tNJFJmLDVTLu+v05mVZ88RINa3vQqnyyWkTKWYz0CwE=
+github.com/dave/jennifer v1.4.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
 github.com/di-wu/regen v0.0.0-20191224153906-041b1bce4065 h1:Iov2tpNADzF5m/JwT+c1A8u40GmJKpmZp9Sb3jrPIPI=
 github.com/di-wu/regen v0.0.0-20191224153906-041b1bce4065/go.mod h1:1AGOmC2ExxkWjWb7bQNwFD2+0PxttZRYlLeUayrARus=

@@ -4,7 +4,7 @@ CHAR   = %x01-7F
        ; any 7-bit US-ASCII character,
        ; excluding NUL
 CR     =  %x0D ; carriage return
-CRLF   = CR LF
+CRLF   = CR LF / LF
        ; Internet standard newline
 CTL    = %x00-1F / %x7F ; controls
 DIGIT  = %x30-39 ; 0-9
