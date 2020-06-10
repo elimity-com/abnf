@@ -2,6 +2,7 @@ package abnf
 
 import (
 	"fmt"
+	"github.com/elimity-com/abnf/definition"
 
 	"github.com/dave/jennifer/jen"
 )
@@ -53,7 +54,7 @@ func (g generator) generate() *jen.File {
 		returnParameter = "Operator"
 	}
 
-	alternatives := Rulelist([]rune(g.rawABNF))
+	alternatives := definition.Rulelist([]rune(g.rawABNF))
 	for _, line := range alternatives.Best().Children {
 		if line.Contains("rule") {
 			f.Comment(fmt.Sprintf("%s", formatFuncComment(line.GetSubNode("rule").String())))

@@ -7,7 +7,7 @@ popular among many Internet specifications. It balances compactness and simplici
 
 ## Contents
 ### Generator
-Both the [Core ABNF](./core/core_abnf.go) and the [ABNF Definition](./abnf_definition.go) contained within this package 
+Both the [Core ABNF](./core/core_abnf.go) and the [ABNF Definition](./definition/abnf_definition.go) contained within this package 
 where created by the generator.
 ```go
 rawABNF, _ := ioutil.ReadFile("./testdata/core.abnf")
@@ -18,12 +18,12 @@ _ = ioutil.WriteFile("./core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 - free-form prose
 - incremental alternatives
 
-### [Operators](https://godoc.org/github.com/elimity-com/abnf/operators)
-Elements form a sequence of one or more rule names and/or value definitions, combined according to the various operators
-defined in this package, such as alternative and repetition.
 ### [Core ABNF](https://godoc.org/github.com/elimity-com/abnf/core)
 "Core" rules that are used variously among higher-level rules. The "core" rules might be formed into a lexical analyzer 
 or simply be part of the main ruleset.
+### [Operators](https://godoc.org/github.com/elimity-com/abnf/operators)
+Elements form a sequence of one or more rule names and/or value definitions, combined according to the various operators
+defined in this package, such as alternative and repetition.
    
 ## EOL
 Text files created on DOS/Windows machines have different line endings than files created on Unix/Linux. 

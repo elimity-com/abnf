@@ -56,10 +56,10 @@ func TestGenerateDefinition(t *testing.T) {
 		return
 	}
 
-	f := GenerateABNFAsAlternatives("abnf", string(rawDef) + string(rawABNF))
-	// _ = ioutil.WriteFile("./abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+	f := GenerateABNFAsAlternatives("definition", string(rawDef) + string(rawABNF))
+	// _ = ioutil.WriteFile("./definition/abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 
-	raw, err := ioutil.ReadFile("./abnf_definition.go")
+	raw, err := ioutil.ReadFile("./definition/abnf_definition.go")
 	if err != nil {
 		t.Error(err)
 		return

@@ -1,6 +1,6 @@
 // This file is generated - do not edit.
 
-package abnf
+package definition
 
 import operators "github.com/elimity-com/abnf/operators"
 

@@ -1,4 +1,4 @@
-package abnf
+package definition
 
 import (
 	"fmt"
@@ -121,7 +121,7 @@ func TestValues(t *testing.T) {
 }
 
 func TestABNF(t *testing.T) {
-	raw, err := ioutil.ReadFile("testdata/core.abnf")
+	raw, err := ioutil.ReadFile("../testdata/core.abnf")
 	if err != nil {
 		t.Error(err)
 	}
