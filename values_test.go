@@ -36,7 +36,6 @@ func TestBinValues(t *testing.T) {
 			f := g.GenerateABNFAsOperators()
 			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
-				fmt.Printf("%#v", g)
 			}
 		})
 	}
@@ -72,7 +71,6 @@ func TestDecValues(t *testing.T) {
 			f := g.GenerateABNFAsOperators()
 			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
-				fmt.Printf("%#v", g)
 			}
 		})
 	}
@@ -108,7 +106,6 @@ func TestHexValues(t *testing.T) {
 			f := g.GenerateABNFAsOperators()
 			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
-				fmt.Printf("%#v", g)
 			}
 		})
 	}

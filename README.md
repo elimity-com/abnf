@@ -17,7 +17,7 @@ corePkg := externalABNF{
 g := Generator{
 	PackageName: "definition",
 	RawABNF:     string(rawDef),
-	ExternalABNF: map[string]externalABNF{
+	ExternalABNF: map[string]ExternalABNF{
 		"ALPHA":  corePkg,
 		"BIT":    corePkg,
 		// etc.

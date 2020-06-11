@@ -55,14 +55,14 @@ func TestGenerateDefinition(t *testing.T) {
 		return
 	}
 
-	corePkg := externalABNF{
-		operator:    true,
-		packageName: "github.com/elimity-com/abnf/core",
+	corePkg := ExternalABNF{
+		Operator:    true,
+		PackageName: "github.com/elimity-com/abnf/core",
 	}
 	g := Generator{
 		PackageName: "definition",
 		RawABNF:     string(rawDef),
-		ExternalABNF: map[string]externalABNF{
+		ExternalABNF: map[string]ExternalABNF{
 			"ALPHA":  corePkg,
 			"BIT":    corePkg,
 			"CRLF":   corePkg,

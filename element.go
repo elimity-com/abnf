@@ -11,8 +11,8 @@ func (g *Generator) parseElement(node *operators.Node) generatorNode {
 	case "rulename":
 		if external, ok := g.ExternalABNF[child.String()]; ok {
 			return externalIdentifier{
-				call:  external.operator,
-				pkg:   external.packageName,
+				call:  external.Operator,
+				pkg:   external.PackageName,
 				value: formatRuleName(child.String()),
 			}
 		}

@@ -25,14 +25,14 @@ type Generator struct {
 	RawABNF     string
 	// reference to external abnf syntax
 	// e.g. ALPHA from github.com/elimity-com/abnf/core
-	ExternalABNF map[string]externalABNF
+	ExternalABNF map[string]ExternalABNF
 }
 
-type externalABNF struct {
+type ExternalABNF struct {
 	// alternatives / operator
-	operator    bool
+	Operator    bool
 	// e.g. github.com/elimity-com/abnf/core
-	packageName string
+	PackageName string
 }
 
 // GenerateABNFAsOperators returns a *jen.File containing the given ABNF syntax as Go Operator functions.
