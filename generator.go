@@ -16,33 +16,38 @@ var multiLineCall = jen.Options{
 	Separator: ",",
 }
 
-type generator struct {
+type Generator struct {
+	// whether to generate as alternatives or operators
 	alts        bool
+	// package name of the generated file
+	PackageName string
+	// syntax to parse
+	RawABNF     string
+	// reference to external abnf syntax
+	// e.g. ALPHA from github.com/elimity-com/abnf/core
+	ExternalABNF map[string]externalABNF
+}
+
+type externalABNF struct {
+	// alternatives / operator
+	operator    bool
+	// e.g. github.com/elimity-com/abnf/core
 	packageName string
-	rawABNF     string
 }
 
 // GenerateABNFAsOperators returns a *jen.File containing the given ABNF syntax as Go Operator functions.
-func GenerateABNFAsOperators(packageName, rawABNF string) *jen.File {
-	g := generator{
-		packageName: packageName,
-		rawABNF:     rawABNF,
-	}
+func (g *Generator) GenerateABNFAsOperators() *jen.File {
 	return g.generate()
 }
 
 // GenerateABNFAsAlternatives returns a *jen.File containing the given ABNF syntax as Go functions that return Alternatives.
-func GenerateABNFAsAlternatives(packageName, rawABNF string) *jen.File {
-	g := generator{
-		alts:        true,
-		packageName: packageName,
-		rawABNF:     rawABNF,
-	}
+func (g *Generator) GenerateABNFAsAlternatives() *jen.File {
+	g.alts = true
 	return g.generate()
 }
 
-func (g generator) generate() *jen.File {
-	f := jen.NewFile(g.packageName)
+func (g *Generator) generate() *jen.File {
+	f := jen.NewFile(g.PackageName)
 
 	f.HeaderComment("This file is generated - do not edit.")
 	f.Line()
@@ -54,7 +59,7 @@ func (g generator) generate() *jen.File {
 		returnParameter = "Operator"
 	}
 
-	alternatives := definition.Rulelist([]rune(g.rawABNF))
+	alternatives := definition.Rulelist([]rune(g.RawABNF))
 	for _, line := range alternatives.Best().Children {
 		if line.Contains("rule") {
 			f.Comment(fmt.Sprintf("%s", formatFuncComment(line.GetSubNode("rule").String())))

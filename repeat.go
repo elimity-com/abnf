@@ -55,7 +55,7 @@ func (r rep) getKey() key {
 	return key(r.key)
 }
 
-func (g generator) parseRep(node *operators.Node) rep {
+func (g *Generator) parseRep(node *operators.Node) rep {
 	if node.Children[0].IsEmpty() {
 		return rep{
 			key:     node.String(),

@@ -8,7 +8,7 @@ import (
 	"github.com/elimity-com/abnf/operators"
 )
 
-func (g generator) parseNumVal(node *operators.Node) generatorNode {
+func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 	child := node.Children[1].Children[0]
 	var numValue string
 	switch child.Key {
@@ -113,7 +113,7 @@ func (g generator) parseNumVal(node *operators.Node) generatorNode {
 }
 
 
-func (g generator) parseProseVal(node *operators.Node) generatorNode {
+func (g *Generator) parseProseVal(node *operators.Node) generatorNode {
 	log.Fatal("not implemented, to be used as last resort")
 	return nil
 }

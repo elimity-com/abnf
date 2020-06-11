@@ -28,7 +28,7 @@ func (a alts) getKey() key {
 	return key(a.key)
 }
 
-func (g generator) parseAlts(node *operators.Node) alts {
+func (g *Generator) parseAlts(node *operators.Node) alts {
 	elements := []generatorNode{g.parseConcat(node.GetSubNode("concatenation"))}
 	for _, child := range node.GetSubNodesBefore("*c-wsp \"/\" *c-wsp concatenation", "\"(\"", "\"[\"") {
 		if c := child.GetNode("concatenation"); c != nil {
@@ -63,7 +63,7 @@ func (c concat) getKey() key {
 	return key(c.key)
 }
 
-func (g generator) parseConcat(node *operators.Node) concat {
+func (g *Generator) parseConcat(node *operators.Node) concat {
 	elements := []generatorNode{g.parseRep(node.GetSubNode("repetition"))}
 	for _, child := range node.GetSubNodesBefore("1*c-wsp repetition", "\"(\"", "\"[\"") {
 		if c := child.GetNode("repetition"); c != nil {

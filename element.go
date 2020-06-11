@@ -6,9 +6,16 @@ import (
 	"github.com/elimity-com/abnf/operators"
 )
 
-func (g generator) parseElement(node *operators.Node) generatorNode {
+func (g *Generator) parseElement(node *operators.Node) generatorNode {
 	switch child := node.Children[0]; child.Key {
 	case "rulename":
+		if external, ok := g.ExternalABNF[child.String()]; ok {
+			return externalIdentifier{
+				call:  external.operator,
+				pkg:   external.packageName,
+				value: formatRuleName(child.String()),
+			}
+		}
 		return identifier{
 			call:  !g.alts,
 			value: formatRuleName(child.String()),

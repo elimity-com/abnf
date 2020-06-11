@@ -10,9 +10,21 @@ popular among many Internet specifications. It balances compactness and simplici
 Both the [Core ABNF](./core/core_abnf.go) and the [ABNF Definition](./definition/abnf_definition.go) contained within this package 
 where created by the generator.
 ```go
-rawABNF, _ := ioutil.ReadFile("./testdata/core.abnf")
-f := GenerateABNFAsOperators("core", string(rawABNF))
-_ = ioutil.WriteFile("./core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+corePkg := externalABNF{
+	operator:    true,
+	packageName: "github.com/elimity-com/abnf/core",
+}
+g := Generator{
+	PackageName: "definition",
+	RawABNF:     string(rawDef),
+	ExternalABNF: map[string]externalABNF{
+		"ALPHA":  corePkg,
+		"BIT":    corePkg,
+		// etc.
+	},
+}
+f := g.GenerateABNFAsAlternatives()
+_ = ioutil.WriteFile("./definition/abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 ```
 ##### (Currently) Not Supported
 - free-form prose

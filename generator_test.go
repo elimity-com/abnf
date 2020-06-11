@@ -13,7 +13,11 @@ func TestGenerateCore(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	f := GenerateABNFAsOperators("core", string(rawABNF))
+	g := Generator{
+		PackageName: "core",
+		RawABNF:     string(rawABNF),
+	}
+	f := g.GenerateABNFAsOperators()
 	// _ = ioutil.WriteFile("./core/core_abnf.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 
 	raw, err := ioutil.ReadFile("./core/core_abnf.go")
@@ -50,13 +54,26 @@ func TestGenerateDefinition(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	rawABNF, err := ioutil.ReadFile("./testdata/core.abnf")
-	if err != nil {
-		t.Error(err)
-		return
-	}
 
-	f := GenerateABNFAsAlternatives("definition", string(rawDef) + string(rawABNF))
+	corePkg := externalABNF{
+		operator:    true,
+		packageName: "github.com/elimity-com/abnf/core",
+	}
+	g := Generator{
+		PackageName: "definition",
+		RawABNF:     string(rawDef),
+		ExternalABNF: map[string]externalABNF{
+			"ALPHA":  corePkg,
+			"BIT":    corePkg,
+			"CRLF":   corePkg,
+			"DIGIT":  corePkg,
+			"DQUOTE": corePkg,
+			"HEXDIG": corePkg,
+			"VCHAR":  corePkg,
+			"WSP":    corePkg,
+		},
+	}
+	f := g.GenerateABNFAsAlternatives()
 	// _ = ioutil.WriteFile("./definition/abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 
 	raw, err := ioutil.ReadFile("./definition/abnf_definition.go")

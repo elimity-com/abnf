@@ -82,3 +82,19 @@ func (i identifier) toJen(_ key) jen.Code {
 func (i identifier) getKey() key {
 	return key(i.value)
 }
+
+type externalIdentifier struct {
+	call bool
+	pkg, value string
+}
+
+func (i externalIdentifier) toJen(_ key) jen.Code {
+	if i.call {
+		return jen.Qual(i.pkg, i.value).Call()
+	}
+	return jen.Qual(i.pkg, i.value)
+}
+
+func (i externalIdentifier) getKey() key {
+	return key(i.value)
+}

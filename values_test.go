@@ -29,8 +29,12 @@ func TestBinValues(t *testing.T) {
 		},
 	} {
 		t.Run("BinVal", func(t *testing.T) {
-			g := GenerateABNFAsOperators("num", test.abnf)
-			if !strings.Contains(fmt.Sprintf("%#v", g), test.contains) {
+			g := Generator{
+				PackageName:  "num",
+				RawABNF:      test.abnf,
+			}
+			f := g.GenerateABNFAsOperators()
+			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
 				fmt.Printf("%#v", g)
 			}
@@ -61,8 +65,12 @@ func TestDecValues(t *testing.T) {
 		},
 	} {
 		t.Run("DecVal", func(t *testing.T) {
-			g := GenerateABNFAsOperators("num", test.abnf)
-			if !strings.Contains(fmt.Sprintf("%#v", g), test.contains) {
+			g := Generator{
+				PackageName:  "num",
+				RawABNF:      test.abnf,
+			}
+			f := g.GenerateABNFAsOperators()
+			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
 				fmt.Printf("%#v", g)
 			}
@@ -93,8 +101,12 @@ func TestHexValues(t *testing.T) {
 		},
 	} {
 		t.Run("DecVal", func(t *testing.T) {
-			g := GenerateABNFAsOperators("num", test.abnf)
-			if !strings.Contains(fmt.Sprintf("%#v", g), test.contains) {
+			g := Generator{
+				PackageName:  "num",
+				RawABNF:      test.abnf,
+			}
+			f := g.GenerateABNFAsOperators()
+			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
 				fmt.Printf("%#v", g)
 			}
