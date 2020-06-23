@@ -9,7 +9,7 @@ import (
 // Node represents a single node in a tree.
 type Node struct {
 	Key      string
-	Value    []rune
+	Value    []byte
 	Children Children
 }
 
@@ -184,4 +184,4 @@ func (as Alternatives) Equals(other Alternatives) error {
 }
 
 // Operator represent an ABNF operator.
-type Operator func([]rune) Alternatives
+type Operator func([]byte) Alternatives

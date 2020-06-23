@@ -32,9 +32,9 @@ func (g *Generator) parseElement(node *operators.Node) generatorNode {
 		values := child.GetSubNodes("%x20-21 / %x23-7E")
 		if len(values) == 1 {
 			value := values[0]
-			return runeValue{
+			return terminalValue{
 				key:   value.String(),
-				value: int(value.String()[0]),
+				values: []int{int(value.String()[0])},
 			}
 		} else {
 			value := child.GetSubNode("*(%x20-21 / %x23-7E)")

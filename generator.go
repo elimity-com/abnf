@@ -2,9 +2,9 @@ package abnf
 
 import (
 	"fmt"
-	"github.com/elimity-com/abnf/definition"
-
 	"github.com/dave/jennifer/jen"
+	"github.com/elimity-com/abnf/definition"
+	"golang.org/x/text/encoding"
 )
 
 const operatorsPkg = "github.com/elimity-com/abnf/operators"
@@ -18,19 +18,21 @@ var multiLineCall = jen.Options{
 
 type Generator struct {
 	// whether to generate as alternatives or operators
-	alts        bool
+	alts bool
 	// package name of the generated file
 	PackageName string
 	// syntax to parse
-	RawABNF     string
+	RawABNF string
 	// reference to external abnf syntax
 	// e.g. ALPHA from github.com/elimity-com/abnf/core
 	ExternalABNF map[string]ExternalABNF
+	// encoding of the characters
+	Encoding encoding.Encoding
 }
 
 type ExternalABNF struct {
 	// alternatives / operator
-	Operator    bool
+	Operator bool
 	// e.g. github.com/elimity-com/abnf/core
 	PackageName string
 }
@@ -52,6 +54,8 @@ func (g *Generator) generate() *jen.File {
 	f.HeaderComment("This file is generated - do not edit.")
 	f.Line()
 
+	f.ImportName(operatorsPkg, "operators")
+
 	var returnParameter string
 	if g.alts {
 		returnParameter = "Alternatives"
@@ -59,7 +63,7 @@ func (g *Generator) generate() *jen.File {
 		returnParameter = "Operator"
 	}
 
-	alternatives := definition.Rulelist([]rune(g.RawABNF))
+	alternatives := definition.Rulelist([]byte(g.RawABNF))
 	for _, line := range alternatives.Best().Children {
 		if line.Contains("rule") {
 			f.Comment(fmt.Sprintf("%s", formatFuncComment(line.GetSubNode("rule").String())))
@@ -75,7 +79,7 @@ func (g *Generator) generate() *jen.File {
 
 			var params []jen.Code
 			if g.alts {
-				params = append(params, jen.Id("s").Op("[]").Id("rune"))
+				params = append(params, jen.Id("s").Op("[]").Id("byte"))
 			}
 			f.Func().Id(formatRuleName(name)).Call(params...).Qual(operatorsPkg, returnParameter).Block(
 				returnValue,

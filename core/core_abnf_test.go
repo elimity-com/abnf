@@ -2,9 +2,9 @@ package core
 
 import (
 	"fmt"
-	"testing"
-
+	"github.com/elimity-com/abnf/encoding"
 	"github.com/elimity-com/abnf/operators"
+	"testing"
 
 	"github.com/di-wu/regen"
 )
@@ -119,7 +119,12 @@ func TestCore(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if nodes := test.rule([]rune(validStr)); nodes == nil {
+
+				// these rules are only valid for ABNF encoded in 7-bit ASCII
+				e := encoding.ASCII.NewEncoder()
+				validStr, _ = e.String(validStr)
+
+				if nodes := test.rule([]byte(validStr)); nodes == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
 					if best := nodes.Best(); !compareRunes(string(best.Value), validStr) {
@@ -128,7 +133,7 @@ func TestCore(t *testing.T) {
 				}
 
 				invalidStr := invalid.Generate()
-				if nodes := test.rule([]rune(invalidStr)); len(nodes) != 0 {
+				if nodes := test.rule([]byte(invalidStr)); len(nodes) != 0 {
 					if test.allowsEmpty {
 						for _, node := range nodes {
 							if node.String() != "" {
@@ -168,11 +173,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "ALPHA",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: operators.Children{
 						{
 							Key:   "%x61-7A",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
@@ -185,11 +190,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "ALPHA",
-					Value: []rune("Z"),
+					Value: []byte("Z"),
 					Children: operators.Children{
 						{
 							Key:   "%x41-5A",
-							Value: []rune("Z"),
+							Value: []byte("Z"),
 						},
 					},
 				},
@@ -202,11 +207,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "BIT",
-					Value: []rune("0"),
+					Value: []byte("0"),
 					Children: operators.Children{
 						{
 							Key:   "\"0\"",
-							Value: []rune("0"),
+							Value: []byte("0"),
 						},
 					},
 				},
@@ -219,11 +224,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "BIT",
-					Value: []rune("1"),
+					Value: []byte("1"),
 					Children: operators.Children{
 						{
 							Key:   "\"1\"",
-							Value: []rune("1"),
+							Value: []byte("1"),
 						},
 					},
 				},
@@ -236,7 +241,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "CHAR",
-					Value: []rune("~"),
+					Value: []byte("~"),
 				},
 			},
 		},
@@ -247,19 +252,19 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "CRLF",
-					Value: []rune("\r\n"),
+					Value: []byte("\r\n"),
 					Children: operators.Children{
 						{
 							Key:   "CR LF",
-							Value: []rune("\r\n"),
+							Value: []byte("\r\n"),
 							Children: operators.Children{
 								{
 									Key:   "CR",
-									Value: []rune("\r"),
+									Value: []byte("\r"),
 								},
 								{
 									Key:   "LF",
-									Value: []rune("\n"),
+									Value: []byte("\n"),
 								},
 							},
 						},
@@ -274,11 +279,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "CRLF",
-					Value: []rune("\n"),
+					Value: []byte("\n"),
 					Children: operators.Children{
 						{
 							Key:   "LF",
-							Value: []rune("\n"),
+							Value: []byte("\n"),
 						},
 					},
 				},
@@ -291,11 +296,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "CTL",
-					Value: []rune("\u001B"),
+					Value: []byte("\u001B"),
 					Children: operators.Children{
 						{
 							Key:   "%x00-1F",
-							Value: []rune("\u001B"),
+							Value: []byte("\u001B"),
 						},
 					},
 				},
@@ -308,7 +313,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "DIGIT",
-					Value: []rune("7"),
+					Value: []byte("7"),
 				},
 			},
 		},
@@ -319,7 +324,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "DQUOTE",
-					Value: []rune("\""),
+					Value: []byte("\""),
 				},
 			},
 		},
@@ -330,11 +335,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "HEXDIG",
-					Value: []rune("7"),
+					Value: []byte("7"),
 					Children: operators.Children{
 						{
 							Key:   "DIGIT",
-							Value: []rune("7"),
+							Value: []byte("7"),
 						},
 					},
 				},
@@ -347,11 +352,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "HEXDIG",
-					Value: []rune("A"),
+					Value: []byte("A"),
 					Children: operators.Children{
 						{
 							Key:   "\"A\"",
-							Value: []rune("A"),
+							Value: []byte("A"),
 						},
 					},
 				},
@@ -364,7 +369,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "HTAB",
-					Value: []rune("\t"),
+					Value: []byte("\t"),
 				},
 			},
 		},
@@ -375,7 +380,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "LF",
-					Value: []rune("\n"),
+					Value: []byte("\n"),
 				},
 			},
 		},
@@ -386,19 +391,19 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "LWSP",
-					Value: []rune(" "),
+					Value: []byte(" "),
 					Children: operators.Children{
 						{
 							Key:   "WSP / CRLF WSP",
-							Value: []rune(" "),
+							Value: []byte(" "),
 							Children: operators.Children{
 								{
 									Key:   "WSP",
-									Value: []rune(" "),
+									Value: []byte(" "),
 									Children: operators.Children{
 										{
 											Key:   "SP",
-											Value: []rune(" "),
+											Value: []byte(" "),
 										},
 									},
 								},
@@ -408,7 +413,7 @@ func TestNode(t *testing.T) {
 				},
 				{
 					Key:   "LWSP",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -419,33 +424,33 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "LWSP",
-					Value: []rune("\n "),
+					Value: []byte("\n "),
 					Children: operators.Children{
 						{
 							Key:   "WSP / CRLF WSP",
-							Value: []rune("\n "),
+							Value: []byte("\n "),
 							Children: operators.Children{
 								{
 									Key:   "CRLF WSP",
-									Value: []rune("\n "),
+									Value: []byte("\n "),
 									Children: operators.Children{
 										{
 											Key:   "CRLF",
-											Value: []rune("\n"),
+											Value: []byte("\n"),
 											Children: operators.Children{
 												{
 													Key:   "LF",
-													Value: []rune("\n"),
+													Value: []byte("\n"),
 												},
 											},
 										},
 										{
 											Key:   "WSP",
-											Value: []rune(" "),
+											Value: []byte(" "),
 											Children: operators.Children{
 												{
 													Key:   "SP",
-													Value: []rune(" "),
+													Value: []byte(" "),
 												},
 											},
 										},
@@ -457,7 +462,7 @@ func TestNode(t *testing.T) {
 				},
 				{
 					Key:   "LWSP",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -468,7 +473,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "OCTET",
-					Value: []rune("o"),
+					Value: []byte("o"),
 				},
 			},
 		},
@@ -479,7 +484,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "SP",
-					Value: []rune(" "),
+					Value: []byte(" "),
 				},
 			},
 		},
@@ -490,7 +495,7 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "VCHAR",
-					Value: []rune("~"),
+					Value: []byte("~"),
 				},
 			},
 		},
@@ -501,11 +506,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "WSP",
-					Value: []rune(" "),
+					Value: []byte(" "),
 					Children: operators.Children{
 						{
 							Key:   "SP",
-							Value: []rune(" "),
+							Value: []byte(" "),
 						},
 					},
 				},
@@ -518,11 +523,11 @@ func TestNode(t *testing.T) {
 			correct: operators.Alternatives{
 				{
 					Key:   "WSP",
-					Value: []rune("\t"),
+					Value: []byte("\t"),
 					Children: operators.Children{
 						{
 							Key:   "HTAB",
-							Value: []rune("\t"),
+							Value: []byte("\t"),
 						},
 					},
 				},
@@ -530,7 +535,7 @@ func TestNode(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			nodes := test.rule([]rune(test.str))
+			nodes := test.rule([]byte(test.str))
 			if err := nodes.Equals(test.correct); err != nil {
 				for _, node := range nodes {
 					fmt.Print(node.StringRecursive())

@@ -4,11 +4,11 @@ package definition
 
 import (
 	core "github.com/elimity-com/abnf/core"
-	operators "github.com/elimity-com/abnf/operators"
+	"github.com/elimity-com/abnf/operators"
 )
 
 // Rulelist = 1*( rule / (*WSP c-nl) )
-func Rulelist(s []rune) operators.Alternatives {
+func Rulelist(s []byte) operators.Alternatives {
 	return operators.Repeat1Inf("rulelist", operators.Alts(
 		"rule / (*WSP c-nl)",
 		Rule,
@@ -21,7 +21,7 @@ func Rulelist(s []rune) operators.Alternatives {
 }
 
 // Rule = rulename defined-as elements c-nl
-func Rule(s []rune) operators.Alternatives {
+func Rule(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"rule",
 		Rulename,
@@ -32,7 +32,7 @@ func Rule(s []rune) operators.Alternatives {
 }
 
 // Rulename = ALPHA *(ALPHA / DIGIT / "-")
-func Rulename(s []rune) operators.Alternatives {
+func Rulename(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"rulename",
 		core.ALPHA(),
@@ -40,19 +40,19 @@ func Rulename(s []rune) operators.Alternatives {
 			"ALPHA / DIGIT / \"-\"",
 			core.ALPHA(),
 			core.DIGIT(),
-			operators.Rune("\"-\"", 45),
+			operators.Terminal("\"-\"", []byte{45}),
 		)),
 	)(s)
 }
 
 // DefinedAs = *c-wsp ("=" / "=/") *c-wsp
-func DefinedAs(s []rune) operators.Alternatives {
+func DefinedAs(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"defined-as",
 		operators.Repeat0Inf("*c-wsp", CWsp),
 		operators.Alts(
 			"(\"=\" / \"=/\")",
-			operators.Rune("\"=\"", 61),
+			operators.Terminal("\"=\"", []byte{61}),
 			operators.String("\"=/\"", "=/"),
 		),
 		operators.Repeat0Inf("*c-wsp", CWsp),
@@ -60,7 +60,7 @@ func DefinedAs(s []rune) operators.Alternatives {
 }
 
 // Elements = alternation *WSP
-func Elements(s []rune) operators.Alternatives {
+func Elements(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"elements",
 		Alternation,
@@ -69,7 +69,7 @@ func Elements(s []rune) operators.Alternatives {
 }
 
 // CWsp = WSP / (c-nl WSP)
-func CWsp(s []rune) operators.Alternatives {
+func CWsp(s []byte) operators.Alternatives {
 	return operators.Alts(
 		"c-wsp",
 		core.WSP(),
@@ -82,7 +82,7 @@ func CWsp(s []rune) operators.Alternatives {
 }
 
 // CNl = comment / CRLF
-func CNl(s []rune) operators.Alternatives {
+func CNl(s []byte) operators.Alternatives {
 	return operators.Alts(
 		"c-nl",
 		Comment,
@@ -91,10 +91,10 @@ func CNl(s []rune) operators.Alternatives {
 }
 
 // Comment = "
-func Comment(s []rune) operators.Alternatives {
+func Comment(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"comment",
-		operators.Rune("\";\"", 59),
+		operators.Terminal("\";\"", []byte{59}),
 		operators.Repeat0Inf("*(WSP / VCHAR)", operators.Alts(
 			"WSP / VCHAR",
 			core.WSP(),
@@ -105,14 +105,14 @@ func Comment(s []rune) operators.Alternatives {
 }
 
 // Alternation = concatenation *(*c-wsp "/" *c-wsp concatenation)
-func Alternation(s []rune) operators.Alternatives {
+func Alternation(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"alternation",
 		Concatenation,
 		operators.Repeat0Inf("*(*c-wsp \"/\" *c-wsp concatenation)", operators.Concat(
 			"*c-wsp \"/\" *c-wsp concatenation",
 			operators.Repeat0Inf("*c-wsp", CWsp),
-			operators.Rune("\"/\"", 47),
+			operators.Terminal("\"/\"", []byte{47}),
 			operators.Repeat0Inf("*c-wsp", CWsp),
 			Concatenation,
 		)),
@@ -120,7 +120,7 @@ func Alternation(s []rune) operators.Alternatives {
 }
 
 // Concatenation = repetition *(1*c-wsp repetition)
-func Concatenation(s []rune) operators.Alternatives {
+func Concatenation(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"concatenation",
 		Repetition,
@@ -133,7 +133,7 @@ func Concatenation(s []rune) operators.Alternatives {
 }
 
 // Repetition = [repeat] element
-func Repetition(s []rune) operators.Alternatives {
+func Repetition(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"repetition",
 		operators.Optional("[repeat]", Repeat),
@@ -142,21 +142,21 @@ func Repetition(s []rune) operators.Alternatives {
 }
 
 // Repeat = 1*DIGIT / (*DIGIT "*" *DIGIT)
-func Repeat(s []rune) operators.Alternatives {
+func Repeat(s []byte) operators.Alternatives {
 	return operators.Alts(
 		"repeat",
 		operators.Repeat1Inf("1*DIGIT", core.DIGIT()),
 		operators.Concat(
 			"(*DIGIT \"*\" *DIGIT)",
 			operators.Repeat0Inf("*DIGIT", core.DIGIT()),
-			operators.Rune("\"*\"", 42),
+			operators.Terminal("\"*\"", []byte{42}),
 			operators.Repeat0Inf("*DIGIT", core.DIGIT()),
 		),
 	)(s)
 }
 
 // Element = rulename / group / option / char-val / num-val / prose-val
-func Element(s []rune) operators.Alternatives {
+func Element(s []byte) operators.Alternatives {
 	return operators.Alts(
 		"element",
 		Rulename,
@@ -169,48 +169,48 @@ func Element(s []rune) operators.Alternatives {
 }
 
 // Group = "(" *c-wsp alternation *c-wsp ")"
-func Group(s []rune) operators.Alternatives {
+func Group(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"group",
-		operators.Rune("\"(\"", 40),
+		operators.Terminal("\"(\"", []byte{40}),
 		operators.Repeat0Inf("*c-wsp", CWsp),
 		Alternation,
 		operators.Repeat0Inf("*c-wsp", CWsp),
-		operators.Rune("\")\"", 41),
+		operators.Terminal("\")\"", []byte{41}),
 	)(s)
 }
 
 // Option = "[" *c-wsp alternation *c-wsp "]"
-func Option(s []rune) operators.Alternatives {
+func Option(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"option",
-		operators.Rune("\"[\"", 91),
+		operators.Terminal("\"[\"", []byte{91}),
 		operators.Repeat0Inf("*c-wsp", CWsp),
 		Alternation,
 		operators.Repeat0Inf("*c-wsp", CWsp),
-		operators.Rune("\"]\"", 93),
+		operators.Terminal("\"]\"", []byte{93}),
 	)(s)
 }
 
 // CharVal = DQUOTE *(%x20-21 / %x23-7E) DQUOTE
-func CharVal(s []rune) operators.Alternatives {
+func CharVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"char-val",
 		core.DQUOTE(),
 		operators.Repeat0Inf("*(%x20-21 / %x23-7E)", operators.Alts(
 			"%x20-21 / %x23-7E",
-			operators.Range("%x20-21", 32, 33),
-			operators.Range("%x23-7E", 35, 126),
+			operators.Range("%x20-21", []byte{32}, []byte{33}),
+			operators.Range("%x23-7E", []byte{35}, []byte{126}),
 		)),
 		core.DQUOTE(),
 	)(s)
 }
 
 // NumVal = "%" (bin-val / dec-val / hex-val)
-func NumVal(s []rune) operators.Alternatives {
+func NumVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"num-val",
-		operators.Rune("\"%\"", 37),
+		operators.Terminal("\"%\"", []byte{37}),
 		operators.Alts(
 			"(bin-val / dec-val / hex-val)",
 			BinVal,
@@ -221,21 +221,21 @@ func NumVal(s []rune) operators.Alternatives {
 }
 
 // BinVal = "b" 1*BIT [ 1*("." 1*BIT) / ("-" 1*BIT) ]
-func BinVal(s []rune) operators.Alternatives {
+func BinVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"bin-val",
-		operators.Rune("\"b\"", 98),
+		operators.Terminal("\"b\"", []byte{98}),
 		operators.Repeat1Inf("1*BIT", core.BIT()),
 		operators.Optional("[ 1*(\".\" 1*BIT) / (\"-\" 1*BIT) ]", operators.Alts(
 			"1*(\".\" 1*BIT) / (\"-\" 1*BIT)",
 			operators.Repeat1Inf("1*(\".\" 1*BIT)", operators.Concat(
 				"\".\" 1*BIT",
-				operators.Rune("\".\"", 46),
+				operators.Terminal("\".\"", []byte{46}),
 				operators.Repeat1Inf("1*BIT", core.BIT()),
 			)),
 			operators.Concat(
 				"(\"-\" 1*BIT)",
-				operators.Rune("\"-\"", 45),
+				operators.Terminal("\"-\"", []byte{45}),
 				operators.Repeat1Inf("1*BIT", core.BIT()),
 			),
 		)),
@@ -243,21 +243,21 @@ func BinVal(s []rune) operators.Alternatives {
 }
 
 // DecVal = "d" 1*DIGIT [ 1*("." 1*DIGIT) / ("-" 1*DIGIT) ]
-func DecVal(s []rune) operators.Alternatives {
+func DecVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"dec-val",
-		operators.Rune("\"d\"", 100),
+		operators.Terminal("\"d\"", []byte{100}),
 		operators.Repeat1Inf("1*DIGIT", core.DIGIT()),
 		operators.Optional("[ 1*(\".\" 1*DIGIT) / (\"-\" 1*DIGIT) ]", operators.Alts(
 			"1*(\".\" 1*DIGIT) / (\"-\" 1*DIGIT)",
 			operators.Repeat1Inf("1*(\".\" 1*DIGIT)", operators.Concat(
 				"\".\" 1*DIGIT",
-				operators.Rune("\".\"", 46),
+				operators.Terminal("\".\"", []byte{46}),
 				operators.Repeat1Inf("1*DIGIT", core.DIGIT()),
 			)),
 			operators.Concat(
 				"(\"-\" 1*DIGIT)",
-				operators.Rune("\"-\"", 45),
+				operators.Terminal("\"-\"", []byte{45}),
 				operators.Repeat1Inf("1*DIGIT", core.DIGIT()),
 			),
 		)),
@@ -265,21 +265,21 @@ func DecVal(s []rune) operators.Alternatives {
 }
 
 // HexVal = "x" 1*HEXDIG [ 1*("." 1*HEXDIG) / ("-" 1*HEXDIG) ]
-func HexVal(s []rune) operators.Alternatives {
+func HexVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"hex-val",
-		operators.Rune("\"x\"", 120),
+		operators.Terminal("\"x\"", []byte{120}),
 		operators.Repeat1Inf("1*HEXDIG", core.HEXDIG()),
 		operators.Optional("[ 1*(\".\" 1*HEXDIG) / (\"-\" 1*HEXDIG) ]", operators.Alts(
 			"1*(\".\" 1*HEXDIG) / (\"-\" 1*HEXDIG)",
 			operators.Repeat1Inf("1*(\".\" 1*HEXDIG)", operators.Concat(
 				"\".\" 1*HEXDIG",
-				operators.Rune("\".\"", 46),
+				operators.Terminal("\".\"", []byte{46}),
 				operators.Repeat1Inf("1*HEXDIG", core.HEXDIG()),
 			)),
 			operators.Concat(
 				"(\"-\" 1*HEXDIG)",
-				operators.Rune("\"-\"", 45),
+				operators.Terminal("\"-\"", []byte{45}),
 				operators.Repeat1Inf("1*HEXDIG", core.HEXDIG()),
 			),
 		)),
@@ -287,15 +287,15 @@ func HexVal(s []rune) operators.Alternatives {
 }
 
 // ProseVal = "<" *(%x20-3D / %x3F-7E) ">"
-func ProseVal(s []rune) operators.Alternatives {
+func ProseVal(s []byte) operators.Alternatives {
 	return operators.Concat(
 		"prose-val",
-		operators.Rune("\"<\"", 60),
+		operators.Terminal("\"<\"", []byte{60}),
 		operators.Repeat0Inf("*(%x20-3D / %x3F-7E)", operators.Alts(
 			"%x20-3D / %x3F-7E",
-			operators.Range("%x20-3D", 32, 61),
-			operators.Range("%x3F-7E", 63, 126),
+			operators.Range("%x20-3D", []byte{32}, []byte{61}),
+			operators.Range("%x3F-7E", []byte{63}, []byte{126}),
 		)),
-		operators.Rune("\">\"", 62),
+		operators.Terminal("\">\"", []byte{62}),
 	)(s)
 }

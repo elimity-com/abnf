@@ -18,19 +18,24 @@ func (v optionalValue) getKey() key {
 	return v.element.getKey()
 }
 
-type runeValue struct {
+type terminalValue struct {
 	key   string
-	value int
+	values []int
 }
 
-func (v runeValue) toJen(k key) jen.Code {
-	return jen.Qual(operatorsPkg, "Rune").Call(
+func (v terminalValue) toJen(k key) jen.Code {
+	values := make([]jen.Code, len(v.values))
+	for i, v := range v.values {
+		values[i] = jen.Lit(v)
+	}
+
+	return jen.Qual(operatorsPkg, "Terminal").Call(
 		jen.Lit(string(k)),
-		jen.Lit(v.value),
+		jen.Index().Byte().Values(values...),
 	)
 }
 
-func (v runeValue) getKey() key {
+func (v terminalValue) getKey() key {
 	return key(v.key)
 }
 
@@ -52,14 +57,23 @@ func (v stringValue) getKey() key {
 
 type rangeValue struct {
 	key      string
-	min, max int
+	min, max []int
 }
 
 func (v rangeValue) toJen(k key) jen.Code {
+	minValues := make([]jen.Code, len(v.min))
+	for i, v := range v.min {
+		minValues[i] = jen.Lit(v)
+	}
+	maxValues := make([]jen.Code, len(v.max))
+	for i, v := range v.max {
+		maxValues[i] = jen.Lit(v)
+	}
+
 	return jen.Qual(operatorsPkg, "Range").Call(
 		jen.Lit(string(k)),
-		jen.Lit(v.min),
-		jen.Lit(v.max),
+		jen.Index().Byte().Values(minValues...),
+		jen.Index().Byte().Values(maxValues...),
 	)
 }
 
@@ -84,7 +98,7 @@ func (i identifier) getKey() key {
 }
 
 type externalIdentifier struct {
-	call bool
+	call       bool
 	pkg, value string
 }
 

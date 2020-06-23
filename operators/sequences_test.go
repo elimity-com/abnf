@@ -5,14 +5,14 @@ import (
 )
 
 var (
-	b = Rune(`b`, 'b')
-	c = Rune(`c`, 'c')
+	b = Terminal(`b`, []byte("b"))
+	c = Terminal(`c`, []byte("c"))
 )
 
 func TestConcat(t *testing.T) {
 	t.Run("Simple", func(t *testing.T) {
 		rule := Concat(`abc`, a, b, c)
-		nodes := rule([]rune("abc"))
+		nodes := rule([]byte("abc"))
 		if len(nodes) != 1 {
 			t.Error("expected one node")
 			return
@@ -40,33 +40,31 @@ func TestConcat(t *testing.T) {
 		}
 	})
 
-	/*
-		t.Run("Complex", func(t *testing.T) {
-			rule := Concat(``,
+	t.Run("Complex", func(t *testing.T) {
+		rule := Concat(``,
+			a,
+			Repeat0Inf(`*( a / b )`, Alts(`a / b`,
 				a,
-				Repeat0Inf(`*( a / b )`, Alts(`a / b`,
-					a,
-					b,
-				)),
-				a,
-			)
+				b,
+			)),
+			a,
+		)
 
-			if nodes := rule([]rune("aa")); len(nodes) != 1 {
-				// "aa"
-				t.Errorf("expected one node, got %d", len(nodes))
-			}
+		if nodes := rule([]byte("aa")); len(nodes) != 1 {
+			// "aa"
+			t.Errorf("expected one node, got %d", len(nodes))
+		}
 
-			if nodes := rule([]rune("aaa")); len(nodes) != 2 {
-				// "aa" and "aaa"
-				t.Errorf("expected two nodes, got %d", len(nodes))
-			}
+		if nodes := rule([]byte("aaa")); len(nodes) != 2 {
+			// "aa" and "aaa"
+			t.Errorf("expected two nodes, got %d", len(nodes))
+		}
 
-			if nodes := rule([]rune("aaba")); len(nodes) != 2 {
-				// "aa" and "aaba"
-				t.Errorf("expected two nodes, got %d", len(nodes))
-			}
-		})
-	*/
+		if nodes := rule([]byte("aaba")); len(nodes) != 2 {
+			// "aa" and "aaba"
+			t.Errorf("expected two nodes, got %d", len(nodes))
+		}
+	})
 }
 
 func TestAlts(t *testing.T) {
@@ -77,13 +75,36 @@ func TestAlts(t *testing.T) {
 		"abc",
 	} {
 		t.Run("", func(t *testing.T) {
-			if len(rule([]rune(s))) != 1 {
+			if len(rule([]byte(s))) != 1 {
 				t.Errorf("no value found for: %s", s)
 			}
 		})
 	}
 
-	if rule([]rune("c")) != nil {
+	if rule([]byte("c")) != nil {
 		t.Errorf("value found for \"c\"")
 	}
+
+	t.Run("Complex", func(t *testing.T) {
+		rule := Repeat0Inf(`*( a / b )`, Alts(`a / b`,
+				a,
+				b,
+			),
+		)
+
+		if nodes := rule([]byte("aa")); len(nodes) != 3 {
+			// "", "a" and "aa"
+			t.Errorf("expected three node, got %d", len(nodes))
+		}
+
+		if nodes := rule([]byte("aaa")); len(nodes) != 4 {
+			// "", "a", "aa" and "aaa"
+			t.Errorf("expected four nodes, got %d", len(nodes))
+		}
+
+		if nodes := rule([]byte("aaba")); len(nodes) != 5 {
+			// "", "a", "aa", "aab" and "aaba"
+			t.Errorf("expected five nodes, got %d", len(nodes))
+		}
+	})
 }

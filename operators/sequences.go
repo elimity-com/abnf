@@ -3,7 +3,7 @@ package operators
 // Concat defines a simple, ordered string of values (i.e., a concatenation of contiguous characters) by listing a
 // sequence of rule names.
 func Concat(key string, rules ...Operator) Operator {
-	return func(s []rune) Alternatives {
+	return func(s []byte) Alternatives {
 		var concat func(l int, rules []Operator) Alternatives
 		concat = func(l int, rules []Operator) Alternatives {
 			if len(rules) == 0 {
@@ -33,7 +33,7 @@ func Concat(key string, rules ...Operator) Operator {
 // Alts defines a sequence of alternative elements that are separated by a forward slash ("/").
 // Therefore, "foo / bar" will accept <foo> or <bar>.
 func Alts(key string, rules ...Operator) Operator {
-	return func(s []rune) Alternatives {
+	return func(s []byte) Alternatives {
 		var nodes Alternatives
 		for _, rule := range rules {
 			subNodes := rule(s)

@@ -14,7 +14,7 @@ func TestRepeat0to1(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -38,7 +38,7 @@ func TestRepeat2to3(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -53,7 +53,7 @@ func TestRepeat2to3(t *testing.T) {
 		})
 	}
 
-	if rule([]rune("a")) != nil {
+	if rule([]byte("a")) != nil {
 		t.Errorf("value found for \"a\"")
 	}
 }
@@ -66,7 +66,7 @@ func TestRepeat0toInf(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -89,7 +89,7 @@ func TestRepeat0toInf(t *testing.T) {
 	}
 
 	t.Run(`Complex`, func(t *testing.T) {
-		nodes := Repeat0Inf(`*( [ a ] )`, a)([]rune(""))
+		nodes := Repeat0Inf(`*( [ a ] )`, a)([]byte(""))
 		if len(nodes) > 1 {
 			t.Error("too much nodes found")
 		}
@@ -104,7 +104,7 @@ func TestRepeat1toInf(t *testing.T) {
 		strings.Repeat("a", 99),
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -128,7 +128,7 @@ func TestRepeat1toInf(t *testing.T) {
 }
 
 func TestRepeat5(t *testing.T) {
-	nodes := Repeat(`5( a )`, 5, 5, a)([]rune("aaaaa"))
+	nodes := Repeat(`5( a )`, 5, 5, a)([]byte("aaaaa"))
 	if len(nodes) == 0 {
 		t.Errorf("no value found for aaaaa")
 		return
@@ -146,7 +146,7 @@ func TestRepeatChildren(t *testing.T) {
 		Repeat(`*2( a )`, 0, 2, a),
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune("aa"))
+			nodes := rule([]byte("aa"))
 			for _, node := range nodes {
 				if len(node.Children) != len(string(node.Value)) {
 					t.Errorf("not the correct amount of children: %d, %d", len(node.Children), len(node.Value))

@@ -2,10 +2,9 @@ package abnf
 
 import (
 	"encoding/hex"
+	"github.com/elimity-com/abnf/operators"
 	"log"
 	"strconv"
-
-	"github.com/elimity-com/abnf/operators"
 )
 
 func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
@@ -20,9 +19,8 @@ func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 		numValue = "1*HEXDIG"
 	}
 
-
 	var first string
-	var second []string
+	second := make([]string, 0)
 	var hyphen, point bool
 	for _, v := range child.Children {
 		if c := v.GetNode(numValue); c != nil {
@@ -46,15 +44,15 @@ func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 		}
 	}
 
-	var min, max int
+	var min, max []int
 	var values string
 	switch child.Key {
 	case "bin-val":
 		raw, _ := strconv.ParseInt(first, 2, 64)
-		min = int(raw)
+		min = []int{int(raw)}
 		if hyphen {
 			raw, _ := strconv.ParseInt(second[0], 2, 64)
-			max = int(raw)
+			max = []int{int(raw)}
 		}
 		if point {
 			for _, v := range second {
@@ -63,9 +61,11 @@ func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 			}
 		}
 	case "dec-val":
-		min, _ = strconv.Atoi(first)
+		d, _ := strconv.Atoi(first)
+		min = []int{d}
 		if hyphen {
-			max, _ = strconv.Atoi(second[0])
+			d, _ = strconv.Atoi(second[0])
+			max = []int{d}
 		}
 		if point {
 			for _, v := range second {
@@ -74,13 +74,9 @@ func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 			}
 		}
 	case "hex-val":
-		raw, _ := hex.DecodeString(first)
-		if first != "0" {
-			min = int(raw[0])
-		}
+		min = g.hexStringToBytes(first)
 		if hyphen {
-			raw, _ := hex.DecodeString(second[0])
-			max = int(raw[0])
+			max = g.hexStringToBytes(second[0])
 		}
 		if point {
 			for _, v := range second {
@@ -105,15 +101,22 @@ func (g *Generator) parseNumVal(node *operators.Node) generatorNode {
 		}
 	}
 
-	return runeValue{
-		key:   child.String(),
-		value: min,
+	return terminalValue{
+		key:    child.String(),
+		values: min,
 	}
-	return nil
 }
-
 
 func (g *Generator) parseProseVal(node *operators.Node) generatorNode {
 	log.Fatal("not implemented, to be used as last resort")
 	return nil
+}
+
+func (g *Generator) hexStringToBytes(hexStr string) []int {
+	n, _ := strconv.ParseInt(hexStr, 16, 64)
+	b := make([]int, (len(hexStr)+1)/2)
+	for i := range b {
+		b[i] = int(byte(n >> uint64(8*(len(b)-i-1))))
+	}
+	return b
 }

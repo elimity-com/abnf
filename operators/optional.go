@@ -2,7 +2,7 @@ package operators
 
 // Optional defines an optional element sequence.
 func Optional(key string, r Operator) Operator {
-	return func(s []rune) Alternatives {
+	return func(s []byte) Alternatives {
 		empty := &Node{
 			Key:   key,
 			Value: s[:0],

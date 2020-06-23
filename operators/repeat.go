@@ -2,7 +2,7 @@ package operators
 
 // Repeat defines a variable repetition.
 func Repeat(key string, min, max int, r Operator) Operator {
-	return func(s []rune) Alternatives {
+	return func(s []byte) Alternatives {
 		var repeat func(i, l int) Alternatives
 		repeat = func(i, l int) Alternatives {
 			var nodes Alternatives
