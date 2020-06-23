@@ -77,7 +77,6 @@ func TestAltsAndConcats(t *testing.T) {
 			f := g.GenerateABNFAsAlternatives()
 			if !strings.Contains(fmt.Sprintf("%#v", f), test.contains) {
 				t.Errorf("did not parse correctly")
-				fmt.Printf("%#v", f)
 			}
 		})
 	}

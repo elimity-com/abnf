@@ -13,13 +13,13 @@ func TestNode(t *testing.T) {
 		correct Alternatives
 	}{
 		{
-			name: "Rune",
+			name: "Terminal",
 			rule: a,
 			str:  "a",
 			correct: Alternatives{
 				{
 					Key:   "a",
-					Value: []rune("a"),
+					Value: []byte("a"),
 				},
 			},
 		},
@@ -30,50 +30,50 @@ func TestNode(t *testing.T) {
 		},
 		{
 			name: "String",
-			rule: String(`s`, "str"),
-			str:  "Str",
+			rule: String(`cs`, "str"),
+			str:  "str",
 			correct: Alternatives{
 				{
-					Key:   "s",
-					Value: []rune("Str"),
+					Key:   "cs",
+					Value: []byte("str"),
 				},
 			},
 		},
 		{
 			name: "StringEmpty",
-			rule: String(`s`, "str"),
+			rule: String(`cs`, "str"),
 			str:  "rts",
 		},
 		{
-			name: "StringCS",
-			rule: StringCS(`cs`, "str"),
-			str:  "str",
+			name: "String",
+			rule: StringCI(`s`, "str"),
+			str:  "Str",
 			correct: Alternatives{
 				{
-					Key:   "cs",
-					Value: []rune("str"),
+					Key:   "s",
+					Value: []byte("Str"),
 				},
 			},
 		},
 		{
-			name: "StringCSEmpty",
-			rule: StringCS(`cs`, "str"),
+			name: "StringCIEmpty",
+			rule: String(`s`, "str"),
 			str:  "rts",
 		},
 		{
 			name: "Range",
-			rule: Range(`r`, 'a', 'z'),
+			rule: Range(`r`, []byte("a"), []byte("z")),
 			str:  "x",
 			correct: Alternatives{
 				{
 					Key:   "r",
-					Value: []rune("x"),
+					Value: []byte("x"),
 				},
 			},
 		},
 		{
 			name: "RangeEmpty",
-			rule: Range(`r`, 'a', 'z'),
+			rule: Range(`r`, []byte("a"), []byte("z")),
 			str:  "0",
 		},
 		{
@@ -83,17 +83,17 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "o",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key:   "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
 				{
 					Key:   "o",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -103,7 +103,7 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "o",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -113,7 +113,7 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "r0",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -124,11 +124,11 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "r1",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key:   "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
@@ -146,30 +146,30 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "r0i",
-					Value: []rune("aa"),
+					Value: []byte("aa"),
 					Children: Children{
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
 				{
 					Key:   "r0i",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
 				{
 					Key:   "r0i",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -180,7 +180,7 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "r0i",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -191,25 +191,25 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "r1i",
-					Value: []rune("aa"),
+					Value: []byte("aa"),
 					Children: Children{
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
 				{
 					Key:   "r1i",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
@@ -227,17 +227,17 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "ro",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key: "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
 				{
 					Key:   "ro",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -248,7 +248,7 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "ro",
-					Value: []rune(""),
+					Value: []byte(""),
 				},
 			},
 		},
@@ -259,19 +259,19 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "c",
-					Value: []rune("abc"),
+					Value: []byte("abc"),
 					Children: Children{
 						{
 							Key:   "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 						{
 							Key:   "b",
-							Value: []rune("b"),
+							Value: []byte("b"),
 						},
 						{
 							Key:   "c",
-							Value: []rune("c"),
+							Value: []byte("c"),
 						},
 					},
 				},
@@ -292,39 +292,39 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "cr",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key:   "r0i1",
-							Value: []rune("a"),
+							Value: []byte("a"),
 							Children: Children{
 								{
 									Key: "a",
-									Value: []rune("a"),
+									Value: []byte("a"),
 								},
 							},
 						},
 						{
 							Key:   "r0i2",
-							Value: []rune(""),
+							Value: []byte(""),
 						},
 					},
 				},
 				{
 					Key:   "cr",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key:   "r0i1",
-							Value: []rune(""),
+							Value: []byte(""),
 						},
 						{
 							Key:   "r0i2",
-							Value: []rune("a"),
+							Value: []byte("a"),
 							Children: Children{
 								{
 									Key: "a",
-									Value: []rune("a"),
+									Value: []byte("a"),
 								},
 							},
 						},
@@ -332,15 +332,15 @@ func TestNode(t *testing.T) {
 				},
 				{
 					Key:   "cr",
-					Value: []rune(""),
+					Value: []byte(""),
 					Children: Children{
 						{
 							Key:   "r0i1",
-							Value: []rune(""),
+							Value: []byte(""),
 						},
 						{
 							Key:   "r0i2",
-							Value: []rune(""),
+							Value: []byte(""),
 						},
 					},
 				},
@@ -353,11 +353,11 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "a",
-					Value: []rune("a"),
+					Value: []byte("a"),
 					Children: Children{
 						{
 							Key:   "a",
-							Value: []rune("a"),
+							Value: []byte("a"),
 						},
 					},
 				},
@@ -370,11 +370,11 @@ func TestNode(t *testing.T) {
 			correct: Alternatives{
 				{
 					Key:   "a",
-					Value: []rune("b"),
+					Value: []byte("b"),
 					Children: Children{
 						{
 							Key:   "b",
-							Value: []rune("b"),
+							Value: []byte("b"),
 						},
 					},
 				},
@@ -387,7 +387,7 @@ func TestNode(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			nodes := test.rule([]rune(test.str))
+			nodes := test.rule([]byte(test.str))
 			if err := nodes.Equals(test.correct); err != nil {
 				for _, node := range nodes {
 					fmt.Print(node.StringRecursive())
@@ -401,7 +401,7 @@ func TestNode(t *testing.T) {
 func TestBestAlternative(t *testing.T) {
 	t.Run(`Simple`, func(t *testing.T) {
 		str := "aaa"
-		nodes := Repeat0Inf(``, a)([]rune(str))
+		nodes := Repeat0Inf(``, a)([]byte(str))
 		if best := nodes.Best(); best.String() != str {
 			t.Error("did not get best alternative")
 		}

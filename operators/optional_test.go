@@ -12,7 +12,7 @@ func TestOptional(t *testing.T) {
 		"",
 	} {
 		t.Run(fmt.Sprintf("Simple %d", i), func(t *testing.T) {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Errorf("no value found for: %s", s)
 				return
@@ -33,11 +33,11 @@ func TestOptional(t *testing.T) {
 				Concat(`*1( a ":" ) a`,
 					Repeat(`*1( a ":" )`, 0, 1,
 						Concat(`a ":"`,
-							Rune(`a`, 'a'),
-							Rune(`:`, ':'),
+							Terminal(`a`, []byte("a")),
+							Terminal(`:`, []byte(":")),
 						),
 					),
-					Rune(`a`, 'a'),
+					Terminal(`a`, []byte("a")),
 				),
 			),
 			String(`::`, "::"),
@@ -48,7 +48,7 @@ func TestOptional(t *testing.T) {
 			"a::",
 			"a:a::",
 		} {
-			nodes := rule([]rune(s))
+			nodes := rule([]byte(s))
 			if len(nodes) == 0 {
 				t.Error("no value found")
 			}

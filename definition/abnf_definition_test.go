@@ -48,7 +48,7 @@ func TestDefinition(t *testing.T) {
 	} {
 		for _, s := range test.examples {
 			t.Run(fmt.Sprintf("%s %s", test.name, s), func(t *testing.T) {
-				if value := test.rule([]rune(s)); value == nil {
+				if value := test.rule([]byte(s)); value == nil {
 					t.Errorf("no value found for: %s", s)
 				}
 			})
@@ -104,7 +104,7 @@ func TestValues(t *testing.T) {
 
 			for i := 0; i < 1000; i++ {
 				validStr := valid.Generate()
-				if nodes := test.rule([]rune(validStr)); nodes == nil {
+				if nodes := test.rule([]byte(validStr)); nodes == nil {
 					t.Errorf("no value found for: %s", validStr)
 				} else {
 					if best := nodes.Best(); !compareRunes(string(best.Value), validStr) {
@@ -112,7 +112,7 @@ func TestValues(t *testing.T) {
 					}
 				}
 
-				if invalidStr := invalid.Generate(); test.rule([]rune(invalidStr)) != nil {
+				if invalidStr := invalid.Generate(); test.rule([]byte(invalidStr)) != nil {
 					t.Errorf("tree found for: %s", invalidStr)
 				}
 			}
@@ -126,7 +126,7 @@ func TestABNF(t *testing.T) {
 		t.Error(err)
 	}
 	strABNF := string(raw)
-	list := Rulelist([]rune(strABNF)).Best()
+	list := Rulelist([]byte(strABNF)).Best()
 
 	if list.String() != regexp.MustCompile(`\s+`).ReplaceAllString(strABNF, " ") {
 		t.Error("parsed abnf does not match original")

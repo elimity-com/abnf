@@ -36,6 +36,8 @@ func TestGenerateCore(t *testing.T) {
 	for i := range originalSplit {
 		if originalSplit[i] != generatedSplit[i] {
 			if len(originalSplit[i]) != len(generatedSplit[i]) {
+				fmt.Println(originalSplit[i])
+				fmt.Println(generatedSplit[i])
 				t.Errorf("no equal amount of characters on line %d", i+1)
 				return
 			}
@@ -92,6 +94,8 @@ func TestGenerateDefinition(t *testing.T) {
 	for i := range originalSplit {
 		if originalSplit[i] != generatedSplit[i] {
 			if len(originalSplit[i]) != len(generatedSplit[i]) {
+				fmt.Println(originalSplit[i])
+				fmt.Println(generatedSplit[i])
 				t.Errorf("no equal amount of characters on line %d", i+1)
 				return
 			}
