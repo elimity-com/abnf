@@ -6,7 +6,16 @@ popular among many Internet specifications. It balances compactness and simplici
 [RFC 5234](https://tools.ietf.org/html/rfc5234)
 
 ## Contents
-### Generator
+### Function Generator
+A way to generate the operators in memory.
+```go
+g := ParserGenerator{
+	RawABNF: rawABNF,
+}
+functions := g.GenerateABNFAsOperators()
+// e.g. functions["ALPHA"]([]byte("a"))
+```
+### Code Generator
 Both the [Core ABNF](./core/core_abnf.go) and the [ABNF Definition](./definition/abnf_definition.go) contained within this package 
 where created by the generator.
 ```go
@@ -15,8 +24,8 @@ corePkg := externalABNF{
 	packageName: "github.com/elimity-com/abnf/core",
 }
 g := Generator{
-	PackageName: "definition",
-	RawABNF:     string(rawDef),
+	PackageName:  "definition",
+	RawABNF:      rawABNF,
 	ExternalABNF: map[string]ExternalABNF{
 		"ALPHA":  corePkg,
 		"BIT":    corePkg,
@@ -24,7 +33,7 @@ g := Generator{
 	},
 }
 f := g.GenerateABNFAsAlternatives()
-_ = ioutil.WriteFile("./definition/abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
+// e.g. ioutil.WriteFile("./definition/abnf_definition.go", []byte(fmt.Sprintf("%#v", f)), 0644)
 ```
 ##### (Currently) Not Supported
 - free-form prose

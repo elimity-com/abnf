@@ -3,7 +3,6 @@ package abnf
 import (
 	"fmt"
 	"github.com/dave/jennifer/jen"
-	"golang.org/x/text/encoding"
 	"sort"
 )
 
@@ -16,7 +15,7 @@ var multiLineCall = jen.Options{
 	Separator: ",",
 }
 
-type Generator struct {
+type CodeGenerator struct {
 	// PackageName of the generated file
 	PackageName string
 	// RawABNF syntax to parse
@@ -24,8 +23,6 @@ type Generator struct {
 	// ExternalABNF reference to abnf syntax
 	// e.g. ALPHA from github.com/elimity-com/abnf/core
 	ExternalABNF map[string]ExternalABNF
-	// Encoding of the characters
-	Encoding encoding.Encoding
 
 	isOperator bool
 	synonyms   map[string]string
@@ -38,7 +35,7 @@ type ExternalABNF struct {
 	PackageName string
 }
 
-func (g *Generator) syn(key string) string {
+func (g *CodeGenerator) syn(key string) string {
 	if syn, ok := g.synonyms[key]; ok {
 		delete(g.synonyms, key) // consume
 		return syn
@@ -47,17 +44,17 @@ func (g *Generator) syn(key string) string {
 }
 
 // GenerateABNFAsOperators returns a *jen.File containing the given ABNF syntax as Go Operator functions.
-func (g *Generator) GenerateABNFAsOperators() *jen.File {
+func (g *CodeGenerator) GenerateABNFAsOperators() *jen.File {
 	g.isOperator = true
 	return g.generate()
 }
 
 // GenerateABNFAsAlternatives returns a *jen.File containing the given ABNF syntax as Go functions that return Alternatives.
-func (g *Generator) GenerateABNFAsAlternatives() *jen.File {
+func (g *CodeGenerator) GenerateABNFAsAlternatives() *jen.File {
 	return g.generate()
 }
 
-func (g *Generator) generate() *jen.File {
+func (g *CodeGenerator) generate() *jen.File {
 	g.synonyms = make(map[string]string) // synonyms
 
 	f := jen.NewFile(g.PackageName)
@@ -111,16 +108,16 @@ func (g *Generator) generate() *jen.File {
 	return f
 }
 
-type generatorNode interface {
-	toJen(g *Generator) jen.Code
+type codeGeneratorNode interface {
+	toJen(g *CodeGenerator) jen.Code
 }
 
-func (r Rule) toJen(g *Generator) jen.Code {
+func (r Rule) toJen(g *CodeGenerator) jen.Code {
 	g.synonyms[r.operator.Key()] = r.name
 	return r.operator.toJen(g)
 }
 
-func (alt AlternationOperator) toJen(g *Generator) jen.Code {
+func (alt AlternationOperator) toJen(g *CodeGenerator) jen.Code {
 	return jen.Qual(operatorsPkg, "Alts").CustomFunc(multiLineCall, func(group *jen.Group) {
 		group.Lit(g.syn(alt.key))
 		for _, operator := range alt.subOperators {
@@ -129,7 +126,7 @@ func (alt AlternationOperator) toJen(g *Generator) jen.Code {
 	})
 }
 
-func (concat ConcatenationOperator) toJen(g *Generator) jen.Code {
+func (concat ConcatenationOperator) toJen(g *CodeGenerator) jen.Code {
 	return jen.Qual(operatorsPkg, "Concat").CustomFunc(multiLineCall, func(group *jen.Group) {
 		group.Lit(g.syn(concat.key))
 		for _, operator := range concat.subOperators {
@@ -138,7 +135,7 @@ func (concat ConcatenationOperator) toJen(g *Generator) jen.Code {
 	})
 }
 
-func (rep RepetitionOperator) toJen(g *Generator) jen.Code {
+func (rep RepetitionOperator) toJen(g *CodeGenerator) jen.Code {
 	if rep.min == rep.max {
 		return jen.Qual(operatorsPkg, "RepeatN").Call(
 			jen.Lit(g.syn(rep.key)),
@@ -170,7 +167,7 @@ func (rep RepetitionOperator) toJen(g *Generator) jen.Code {
 	)
 }
 
-func (name RuleNameOperator) toJen(g *Generator) jen.Code {
+func (name RuleNameOperator) toJen(g *CodeGenerator) jen.Code {
 	if external, ok := g.ExternalABNF[name.key]; ok {
 		if external.IsOperator {
 			return jen.Qual(external.PackageName, name.key).Call()
@@ -183,21 +180,21 @@ func (name RuleNameOperator) toJen(g *Generator) jen.Code {
 	return jen.Id(formatRuleName(g.syn(name.key)))
 }
 
-func (opt OptionOperator) toJen(g *Generator) jen.Code {
+func (opt OptionOperator) toJen(g *CodeGenerator) jen.Code {
 	return jen.Qual(operatorsPkg, "Optional").Call(
 		jen.Lit(g.syn(opt.key)),
 		opt.subOperator.toJen(g),
 	)
 }
 
-func (value CharacterValueOperator) toJen(g *Generator) jen.Code {
+func (value CharacterValueOperator) toJen(g *CodeGenerator) jen.Code {
 	return jen.Qual(operatorsPkg, "String").Call(
 		jen.Lit(g.syn(value.value)),
 		jen.Lit(value.value),
 	)
 }
 
-func (value NumericValueOperator) toJen(g *Generator) jen.Code {
+func (value NumericValueOperator) toJen(g *CodeGenerator) jen.Code {
 	values := value.toIntegers()
 
 	if value.hyphen {

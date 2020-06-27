@@ -82,7 +82,8 @@ type Operator interface {
 	// equals checks whether this operator equals given other.
 	equals(other Operator) error
 
-	generatorNode // jen
+	codeGeneratorNode   // code generator
+	parserGeneratorNode // parser generator
 }
 
 // AlternationOperator represents an alternation node of a rule.

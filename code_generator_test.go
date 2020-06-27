@@ -13,7 +13,7 @@ func TestGeneratorGenerateABNFAsOperators(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	g := Generator{
+	g := CodeGenerator{
 		PackageName: "core",
 		RawABNF:     rawABNF,
 	}
@@ -61,7 +61,7 @@ func TestGenerateDefinition(t *testing.T) {
 		IsOperator:  true,
 		PackageName: "github.com/elimity-com/abnf/core",
 	}
-	g := Generator{
+	g := CodeGenerator{
 		PackageName: "definition",
 		RawABNF:     rawDef,
 		ExternalABNF: map[string]ExternalABNF{
