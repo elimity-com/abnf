@@ -81,6 +81,8 @@ type Operator interface {
 	Key() string
 	// equals checks whether this operator equals given other.
 	equals(other Operator) error
+
+	generatorNode // jen
 }
 
 // AlternationOperator represents an alternation node of a rule.
@@ -120,7 +122,7 @@ func parseAlternation(rawNode *operators.Node) Operator {
 		parseConcatenation(rawNode.GetSubNode("concatenation")),
 	}
 	// get all other concatenation nodes
-	for _, other := range rawNode.GetSubNodesBefore(`*c-wsp "/" *c-wsp concatenation`, `"("`, `"["`) {
+	for _, other := range rawNode.GetSubNodesBefore(`*c-wsp "/" *c-wsp concatenation`, "(", "[") {
 		if rawConcat := other.GetNode("concatenation"); rawConcat != nil {
 			subOperators = append(subOperators, parseConcatenation(rawConcat))
 		}
@@ -172,7 +174,7 @@ func parseConcatenation(rawNode *operators.Node) Operator {
 		parseRepetition(rawNode.GetSubNode("repetition")),
 	}
 	// get all other repetition nodes
-	for _, other := range rawNode.GetSubNodesBefore(`1*c-wsp repetition`, `"("`, `"["`) {
+	for _, other := range rawNode.GetSubNodesBefore(`1*c-wsp repetition`, "(", "[") {
 		if rawConcat := other.GetNode("repetition"); rawConcat != nil {
 			subOperators = append(subOperators, parseRepetition(rawConcat))
 		}
@@ -336,7 +338,7 @@ func (opt OptionOperator) equals(other Operator) error {
 func parseOption(rawNode *operators.Node) Operator {
 	rawAlternation := rawNode.GetSubNode("alternation")
 	return OptionOperator{
-		key:         rawAlternation.String(),
+		key:         rawNode.String(),
 		subOperator: parseAlternation(rawAlternation),
 	}
 }
@@ -434,11 +436,11 @@ func parseNumericValue(rawNode *operators.Node) Operator {
 	for _, child := range rawValue.Children {
 		if rawNumericValue := child.GetNode(string(numericType)); rawNumericValue != nil {
 			// encountered hyphen
-			if child.Contains(`"-"`) {
+			if child.Contains("-") {
 				hasHyphen = true
 			}
 			// encountered point(s)
-			if child.Contains(`"."`) {
+			if child.Contains(".") {
 				hasPoints = true
 			}
 
@@ -470,3 +472,35 @@ const (
 	decimal     numericType = "1*DIGIT"
 	hexadecimal numericType = "1*HEXDIG"
 )
+
+func (value NumericValueOperator) toIntegers() [][]int {
+	bytes := make([][]int, len(value.value))
+	switch value.numericType {
+	case binary:
+		for i, part := range value.value {
+			raw, _ := strconv.ParseInt(part, 2, 64)
+			bytes[i] = []int{int(raw)}
+		}
+	case decimal:
+		for i, part := range value.value {
+			raw, _ := strconv.Atoi(part)
+			bytes[i] = []int{raw}
+		}
+	case hexadecimal:
+		for i, part := range value.value {
+			bytes[i] = hexStringToBytes(part)
+		}
+	default:
+		panic("invalid numeric type")
+	}
+	return bytes
+}
+
+func hexStringToBytes(hexStr string) []int {
+	n, _ := strconv.ParseInt(hexStr, 16, 64)
+	b := make([]int, (len(hexStr)+1)/2)
+	for i := range b {
+		b[i] = int(byte(n >> uint64(8*(len(b)-i-1))))
+	}
+	return b
+}

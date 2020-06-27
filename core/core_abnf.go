@@ -17,8 +17,8 @@ func ALPHA() operators.Operator {
 func BIT() operators.Operator {
 	return operators.Alts(
 		"BIT",
-		operators.Terminal("\"0\"", []byte{48}),
-		operators.Terminal("\"1\"", []byte{49}),
+		operators.String("0", "0"),
+		operators.String("1", "1"),
 	)
 }
 
@@ -69,12 +69,12 @@ func HEXDIG() operators.Operator {
 	return operators.Alts(
 		"HEXDIG",
 		DIGIT(),
-		operators.Terminal("\"A\"", []byte{65}),
-		operators.Terminal("\"B\"", []byte{66}),
-		operators.Terminal("\"C\"", []byte{67}),
-		operators.Terminal("\"D\"", []byte{68}),
-		operators.Terminal("\"E\"", []byte{69}),
-		operators.Terminal("\"F\"", []byte{70}),
+		operators.String("A", "A"),
+		operators.String("B", "B"),
+		operators.String("C", "C"),
+		operators.String("D", "D"),
+		operators.String("E", "E"),
+		operators.String("F", "F"),
 	)
 }
 
