@@ -1,7 +1,6 @@
 package operators
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -389,9 +388,6 @@ func TestNode(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			nodes := test.rule([]byte(test.str))
 			if err := nodes.Equals(test.correct); err != nil {
-				for _, node := range nodes {
-					fmt.Print(node.StringRecursive())
-				}
 				t.Error(err)
 			}
 		})
