@@ -11,7 +11,7 @@ func TestNewRuleList(t *testing.T) {
 		t.Error(err)
 	}
 
-	ruleSet := NewRuleList(rawABNF)
+	ruleSet := NewRuleSet(rawABNF)
 	for _, rule := range []Rule{
 		{
 			name: "ALPHA",
@@ -206,7 +206,7 @@ func TestNewRuleList(t *testing.T) {
 		},
 	} {
 		if err := rule.Equals(ruleSet[rule.name]); err != nil {
-			t.Error(err)
+			t.Errorf("%s: %s", rule.name, err)
 		}
 	}
 }

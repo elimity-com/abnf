@@ -136,7 +136,7 @@ func TestABNF(t *testing.T) {
 		t.Errorf("should have 16 rules, got %d", l)
 	}
 
-	if l := len(list.GetSubNodes("\"=\"")); l != 16 {
+	if l := len(list.GetSubNodes("=")); l != 16 {
 		t.Errorf("should have 16 =, got %d", l)
 	}
 

@@ -209,7 +209,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("0"),
 					Children: operators.Children{
 						{
-							Key:   "\"0\"",
+							Key:   "0",
 							Value: []byte("0"),
 						},
 					},
@@ -226,7 +226,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("1"),
 					Children: operators.Children{
 						{
-							Key:   "\"1\"",
+							Key:   "1",
 							Value: []byte("1"),
 						},
 					},
@@ -354,7 +354,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("A"),
 					Children: operators.Children{
 						{
-							Key:   "\"A\"",
+							Key:   "A",
 							Value: []byte("A"),
 						},
 					},
