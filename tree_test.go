@@ -119,7 +119,7 @@ func TestNewRuleList(t *testing.T) {
 		{
 			name: "HEXDIG",
 			operator: AlternationOperator{
-				key: `DIGIT / "A" / "B" / "C" / "D" / "E" / "F"`,
+				key: `DIGIT / "A" / "B" / "C" / "D" / "E" / "F" / "a" / "b" / "c" / "d" / "e" / "f"`,
 				subOperators: []Operator{
 					RuleNameOperator{"DIGIT"},
 					CharacterValueOperator{"A"},
@@ -128,6 +128,12 @@ func TestNewRuleList(t *testing.T) {
 					CharacterValueOperator{"D"},
 					CharacterValueOperator{"E"},
 					CharacterValueOperator{"F"},
+					CharacterValueOperator{"a"},
+					CharacterValueOperator{"b"},
+					CharacterValueOperator{"c"},
+					CharacterValueOperator{"d"},
+					CharacterValueOperator{"e"},
+					CharacterValueOperator{"f"},
 				},
 			},
 		},

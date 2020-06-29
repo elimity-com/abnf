@@ -144,8 +144,8 @@ func TestABNF(t *testing.T) {
 		t.Errorf("should have 22 comments, got %d", l)
 	}
 
-	if l := len(list.GetSubNodes("CRLF")); l != 34 {
-		t.Errorf("should have 34 EOLs, got %d", l)
+	if l := len(list.GetSubNodes("CRLF")); l != 35 {
+		t.Errorf("should have 35 EOLs, got %d", l)
 	}
 }
 

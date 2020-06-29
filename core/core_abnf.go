@@ -64,7 +64,7 @@ func DQUOTE() operators.Operator {
 	return operators.Terminal("DQUOTE", []byte{34})
 }
 
-// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+// HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F" / "a" / "b" / "c" / "d" / "e" / "f"
 func HEXDIG() operators.Operator {
 	return operators.Alts(
 		"HEXDIG",
@@ -75,6 +75,12 @@ func HEXDIG() operators.Operator {
 		operators.String("D", "D"),
 		operators.String("E", "E"),
 		operators.String("F", "F"),
+		operators.String("a", "a"),
+		operators.String("b", "b"),
+		operators.String("c", "c"),
+		operators.String("d", "d"),
+		operators.String("e", "e"),
+		operators.String("f", "f"),
 	)
 }
 

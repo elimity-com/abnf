@@ -77,7 +77,9 @@ func TestParserGeneratorGenerateABNFAsOperators(t *testing.T) {
 		{48, 57, true},
 		{58, 64, false},
 		{65, 70, true},
-		{71, 255, false},
+		{71, 96, false},
+		{97, 102, true},
+		{103, 255, false},
 	}, functions["HEXDIG"])
 
 	testRanges(t, []characterRange{

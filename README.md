@@ -45,7 +45,19 @@ or simply be part of the main ruleset.
 ### [Operators](https://godoc.org/github.com/elimity-com/abnf/operators)
 Elements form a sequence of one or more rule names and/or value definitions, combined according to the various operators
 defined in this package, such as alternative and repetition.
-   
+
+## HEXDIG
+In the spec HEXDIG is case insensitive. \
+i.e. `0x6e != 0x6E`
+```abnf
+HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+```
+In this implementation it is so that `0x6e == 0x6E`.
+```abnf
+HEXDIG = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+               / "a" / "b" / "c" / "d" / "e" / "f"
+```
+
 ## EOL
 Text files created on DOS/Windows machines have different line endings than files created on Unix/Linux. 
 DOS uses carriage return and line feed (`\r\n`) as a line ending, which Unix uses just line feed (`\n`).
