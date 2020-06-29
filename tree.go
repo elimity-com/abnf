@@ -236,7 +236,7 @@ func parseRepetition(rawNode *operators.Node) Operator {
 // parseRepetition converts a raw (nested) repetition node to a two their respective min and max values.
 // ABNF: repeat = 1*DIGIT / (*DIGIT "*" *DIGIT)
 func parseRepeat(rawNode *operators.Node) (int, int) {
-	if rawNode.Key == "1*DIGIT" {
+	if rawNode.Children[0].Key == "1*DIGIT" {
 		i, _ := strconv.Atoi(rawNode.String())
 		return i, i
 	}

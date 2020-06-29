@@ -254,3 +254,54 @@ func TestNumericValue(t *testing.T) {
 		}
 	}
 }
+
+func TestRepetition(t *testing.T) {
+	abnf := "rep04 = *4X\nrep14 = 1*4X\nrep44 = 4X\nrep0i = *X\nrep4i = 4*X\n"
+	set := NewRuleSet([]byte(abnf))
+	for _, rule := range []Rule{
+		{
+			name: "rep04",
+			operator: RepetitionOperator{
+				key: "*4X",
+				min: 0, max: 4,
+				subOperator: RuleNameOperator{"X"},
+			},
+		},
+		{
+			name: "rep14",
+			operator: RepetitionOperator{
+				key: "1*4X",
+				min: 1, max: 4,
+				subOperator: RuleNameOperator{"X"},
+			},
+		},
+		{
+			name: "rep44",
+			operator: RepetitionOperator{
+				key: "4X",
+				min: 4, max: 4,
+				subOperator: RuleNameOperator{"X"},
+			},
+		},
+		{
+			name: "rep0i",
+			operator: RepetitionOperator{
+				key: "*X",
+				min: 0, max: -1,
+				subOperator: RuleNameOperator{"X"},
+			},
+		},
+		{
+			name: "rep4i",
+			operator: RepetitionOperator{
+				key: "4*X",
+				min: 4, max: -1,
+				subOperator: RuleNameOperator{"X"},
+			},
+		},
+	} {
+		if err := rule.Equals(set[rule.name]); err != nil {
+			t.Errorf("%s: %s", rule.name, err)
+		}
+	}
+}
