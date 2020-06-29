@@ -203,7 +203,7 @@ func TestNewRuleList(t *testing.T) {
 		{
 			name: "WSP",
 			operator: AlternationOperator{
-				key:          "SP / HTAB",
+				key: "SP / HTAB",
 				subOperators: []Operator{
 					RuleNameOperator{"SP"},
 					RuleNameOperator{"HTAB"},
@@ -212,6 +212,44 @@ func TestNewRuleList(t *testing.T) {
 		},
 	} {
 		if err := rule.Equals(ruleSet[rule.name]); err != nil {
+			t.Errorf("%s: %s", rule.name, err)
+		}
+	}
+}
+
+func TestNumericValue(t *testing.T) {
+	abnf := "false = %x66.61.6c.73.65 ; false\nnull = %x6e.75.6c.6c ; null\ntrue = %x74.72.75.65 ; true\n"
+	set := NewRuleSet([]byte(abnf))
+	for _, rule := range []Rule{
+		{
+			name: "false",
+			operator: NumericValueOperator{
+				key:         "%x66.61.6c.73.65",
+				points:      true,
+				numericType: hexadecimal,
+				value:       []string{"66", "61", "6c", "73", "65"},
+			},
+		},
+		{
+			name: "null",
+			operator: NumericValueOperator{
+				key:         "%x6e.75.6c.6c",
+				points:      true,
+				numericType: hexadecimal,
+				value:       []string{"6e", "75", "6c", "6c"},
+			},
+		},
+		{
+			name: "true",
+			operator: NumericValueOperator{
+				key:         "%x74.72.75.65",
+				points:      true,
+				numericType: hexadecimal,
+				value:       []string{"74", "72", "75", "65"},
+			},
+		},
+	} {
+		if err := rule.Equals(set[rule.name]); err != nil {
 			t.Errorf("%s: %s", rule.name, err)
 		}
 	}

@@ -448,7 +448,7 @@ func parseNumericValue(rawNode *operators.Node) Operator {
 			if hasHyphen {
 				values = append(values, rawNumericValue.String())
 			} else if hasPoints {
-				for _, part := range rawNumericValue.GetSubNodes(string(numericType)) {
+				for _, part := range child.GetSubNodes(string(numericType)) {
 					values = append(values, part.String())
 				}
 			} else {
