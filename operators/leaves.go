@@ -52,15 +52,16 @@ func StringCI(key string, str string) Operator {
 }
 
 // Range defines the range of alternative numeric values compactly.
-func Range(key string, l, h []byte) Operator {
+func Range(key string, low, high []byte) Operator {
 	return func(s []byte) Alternatives {
-		if len(s) == 0 || len(s) < len(l) || bytes.Compare(s[:len(l)], l) < 0 {
+		if len(s) == 0 || len(s) < len(low) || bytes.Compare(s[:len(low)], low) < 0 {
 			return nil
 		}
 
 		var l int
-		for i := range h {
-			if i+1 <= i+1 && bytes.Compare(s[:i+1], h) <= 0 {
+
+		for i := len(high); 0 < i; i-- {
+			if len(high)-i < len(s) && s[len(high)-i] <= high[i-1] {
 				l++
 			} else {
 				break
