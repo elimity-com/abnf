@@ -70,4 +70,8 @@ func TestRange(t *testing.T) {
 	if len(Range("%x5D-10FFFF", []byte{93}, []byte{16, 255, 255})([]byte("x"))) == 0 {
 		t.Error("no value found for \"x\"")
 	}
+
+	if best := Range("%x5D-10FFFF", []byte{93}, []byte{16, 255, 255})([]byte("t\"")).Best(); best.String() != "t" {
+		t.Errorf("other value found for \"t\": %s", best)
+	}
 }

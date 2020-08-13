@@ -6,6 +6,9 @@ popular among many Internet specifications. It balances compactness and simplici
 [RFC 5234](https://tools.ietf.org/html/rfc5234)
 
 ## Contents
+
+**!** `[]byte(...)` should be UTF-8 encoded!
+
 ### Function Generator
 A way to generate the operators in memory.
 ```go
