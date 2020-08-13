@@ -3,6 +3,7 @@ package operators
 import (
 	"bytes"
 	"strings"
+	"unicode/utf8"
 )
 
 // Terminal defines a single character.
@@ -60,8 +61,9 @@ func Range(key string, low, high []byte) Operator {
 
 		var l int
 
+		_, size := utf8.DecodeRune(s)
 		for i := len(high); 0 < i; i-- {
-			if len(high)-i < len(s) && s[len(high)-i] <= high[i-1] {
+			if len(high)-i < size && s[len(high)-i] <= high[i-1] {
 				l++
 			} else {
 				break
