@@ -87,9 +87,9 @@ func TestAlts(t *testing.T) {
 
 	t.Run("Complex", func(t *testing.T) {
 		rule := Repeat0Inf(`*( a / b )`, Alts(`a / b`,
-				a,
-				b,
-			),
+			a,
+			b,
+		),
 		)
 
 		if nodes := rule([]byte("aa")); len(nodes) != 3 {

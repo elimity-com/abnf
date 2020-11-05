@@ -140,7 +140,7 @@ func testRanges(t *testing.T, ranges []characterRange, operator operators.Operat
 		for i := test.min; i <= test.max; i++ {
 			best := operator([]byte{byte(i)}).Best()
 			if test.isValid && best.IsEmpty() {
-				t.Errorf("no matches found: %d (%s)", i, string(i))
+				t.Errorf("no matches found: %d", i)
 			}
 			if !test.isValid && !best.IsEmpty() {
 				t.Errorf("matches found: %v", best)

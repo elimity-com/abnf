@@ -2,20 +2,18 @@ package abnf
 
 import (
 	"fmt"
-	"github.com/dave/jennifer/jen"
+	"io"
 	"sort"
+	"strconv"
 )
 
 const operatorsPkg = "github.com/elimity-com/abnf/operators"
 
-var multiLineCall = jen.Options{
-	Close:     ")",
-	Multi:     true,
-	Open:      "(",
-	Separator: ",",
-}
-
 type CodeGenerator struct {
+	writer io.Writer
+	last   rune
+	prefix string
+
 	// PackageName of the generated file
 	PackageName string
 	// RawABNF syntax to parse
@@ -28,10 +26,54 @@ type CodeGenerator struct {
 	synonyms   map[string]string
 }
 
+func (g *CodeGenerator) c(format string, args ...interface{}) error {
+	if err := g.w("// "); err != nil {
+		return err
+	}
+	return g.wlnf(format, args...)
+}
+
+func (g *CodeGenerator) w(p string) error {
+	if g.last == '\n' && p != "\n" {
+		p = g.prefix + p
+	}
+	g.last = rune(p[len(p)-1])
+	_, err := g.writer.Write([]byte(p))
+	return err
+}
+
+func (g *CodeGenerator) wf(format string, args ...interface{}) error {
+	return g.w(fmt.Sprintf(format, args...))
+}
+
+func (g *CodeGenerator) wln(p string) error {
+	return g.w(p + "\n")
+}
+
+func (g *CodeGenerator) wlnf(format string, args ...interface{}) error {
+	return g.wln(fmt.Sprintf(format, args...))
+}
+
+func (g *CodeGenerator) ln() error {
+	return g.w("\n")
+}
+
+func (g *CodeGenerator) in(f func()) {
+	tmp := g.prefix
+	g.prefix += "\t"
+	defer func() {
+		g.prefix = tmp
+	}()
+
+	f()
+}
+
 type ExternalABNF struct {
 	// IsOperator: operator / alternatives
 	IsOperator bool
-	// PackageName: e.g. github.com/elimity-com/abnf/core
+	// PackagePath: e.g. github.com/elimity-com/abnf/core
+	PackagePath string
+	// PackageName: e.g. core
 	PackageName string
 }
 
@@ -44,38 +86,42 @@ func (g *CodeGenerator) syn(key string) string {
 }
 
 // GenerateABNFAsOperators returns a *jen.File containing the given ABNF syntax as Go Operator functions.
-func (g *CodeGenerator) GenerateABNFAsOperators() *jen.File {
+func (g *CodeGenerator) GenerateABNFAsOperators(w io.Writer) {
+	g.writer = w
 	g.isOperator = true
-	return g.generate()
+	g.generate()
 }
 
 // GenerateABNFAsAlternatives returns a *jen.File containing the given ABNF syntax as Go functions that return Alternatives.
-func (g *CodeGenerator) GenerateABNFAsAlternatives() *jen.File {
-	return g.generate()
+func (g *CodeGenerator) GenerateABNFAsAlternatives(w io.Writer) {
+	g.writer = w
+	g.generate()
 }
 
-func (g *CodeGenerator) generate() *jen.File {
+func (g *CodeGenerator) generate() {
 	g.synonyms = make(map[string]string) // synonyms
 
-	f := jen.NewFile(g.PackageName)
-
-	f.HeaderComment("This file is generated - do not edit.")
-	f.Line()
-
-	f.ImportName(operatorsPkg, "operators")
-
-	returnParameter := func() (string, string) {
-		if g.isOperator {
-			return operatorsPkg, "Operator"
+	g.c("This file is generated - do not edit.")
+	g.ln()
+	g.wlnf("package %s", g.PackageName)
+	g.ln()
+	g.w("import ")
+	if len(g.ExternalABNF) != 0 {
+		imports := make(map[string]struct{})
+		for _, i := range g.ExternalABNF {
+			imports[i.PackagePath] = struct{}{}
 		}
-		return operatorsPkg, "Alternatives"
-	}
-
-	returnValue := func(rule Rule) jen.Code {
-		if g.isOperator {
-			return jen.Return(rule.toJen(g))
-		}
-		return jen.Return(rule.toJen(g)).Call(jen.Id("s"))
+		g.wln("(")
+		g.in(func() {
+			for i := range imports {
+				g.wlnf("%q", i)
+			}
+			g.ln()
+			g.wlnf("%q", operatorsPkg)
+		})
+		g.wln(")")
+	} else {
+		g.wlnf("%q", operatorsPkg)
 	}
 
 	ruleSet := NewRuleSet(g.RawABNF)
@@ -89,134 +135,115 @@ func (g *CodeGenerator) generate() *jen.File {
 	for _, k := range keys {
 		rule := ruleSet[k]
 
-		f.Comment(fmt.Sprintf("%s = %s", rule.name, rule.operator.Key()))
-
-		var params []jen.Code
-		if !g.isOperator {
-			params = []jen.Code{
-				jen.Id("s").Op("[]").Id("byte"),
-			}
+		g.ln()
+		g.c("%s = %s", rule.name, rule.operator.Key())
+		g.wf("func %s(", formatRuleName(rule.name))
+		if g.isOperator {
+			g.wln(") operators.Operator {")
+		} else {
+			g.wln("s []byte) operators.Alternatives {")
 		}
-
-		f.Func().Id(formatRuleName(rule.name)).Call(params...).Qual(returnParameter()).Block(
-			returnValue(rule),
-		)
-
-		f.Line()
+		g.in(func() {
+			g.w("return ")
+			rule.generate(g)
+			if !g.isOperator {
+				g.w("(s)")
+			}
+			g.ln()
+		})
+		g.wln("}")
 	}
-
-	return f
 }
 
 type codeGeneratorNode interface {
-	toJen(g *CodeGenerator) jen.Code
+	generate(g *CodeGenerator)
 }
 
-func (r Rule) toJen(g *CodeGenerator) jen.Code {
+func (r Rule) generate(g *CodeGenerator) {
 	g.synonyms[r.operator.Key()] = r.name
-	return r.operator.toJen(g)
+	r.operator.generate(g)
 }
 
-func (alt AlternationOperator) toJen(g *CodeGenerator) jen.Code {
-	return jen.Qual(operatorsPkg, "Alts").CustomFunc(multiLineCall, func(group *jen.Group) {
-		group.Lit(g.syn(alt.key))
+func (alt AlternationOperator) generate(g *CodeGenerator) {
+	g.wln("operators.Alts(")
+	g.in(func() {
+		g.wlnf("%q,", g.syn(alt.key))
 		for _, operator := range alt.subOperators {
-			group.Add(operator.toJen(g))
+			operator.generate(g)
+			g.wln(",")
 		}
 	})
+	g.w(")")
 }
 
-func (concat ConcatenationOperator) toJen(g *CodeGenerator) jen.Code {
-	return jen.Qual(operatorsPkg, "Concat").CustomFunc(multiLineCall, func(group *jen.Group) {
-		group.Lit(g.syn(concat.key))
+func (concat ConcatenationOperator) generate(g *CodeGenerator) {
+	g.wln("operators.Concat(")
+	g.in(func() {
+		g.wlnf("%q,", g.syn(concat.key))
 		for _, operator := range concat.subOperators {
-			group.Add(operator.toJen(g))
+			operator.generate(g)
+			g.wln(",")
 		}
 	})
+	g.w(")")
 }
 
-func (rep RepetitionOperator) toJen(g *CodeGenerator) jen.Code {
+func (rep RepetitionOperator) generate(g *CodeGenerator) {
 	if rep.min == rep.max {
-		return jen.Qual(operatorsPkg, "RepeatN").Call(
-			jen.Lit(g.syn(rep.key)),
-			jen.Lit(rep.min),
-			rep.subOperator.toJen(g),
-		)
-	}
-
-	if rep.max == -1 {
+		g.wf("operators.RepeatN(%q, %q, ", g.syn(rep.key), rep.min)
+	} else if rep.max == -1 {
 		switch rep.min {
 		case 0:
-			return jen.Qual(operatorsPkg, "Repeat0Inf").Call(
-				jen.Lit(g.syn(rep.key)),
-				rep.subOperator.toJen(g),
-			)
+			g.wf("operators.Repeat0Inf(%q, ", g.syn(rep.key))
 		case 1:
-			return jen.Qual(operatorsPkg, "Repeat1Inf").Call(
-				jen.Lit(g.syn(rep.key)),
-				rep.subOperator.toJen(g),
-			)
+			g.wf("operators.Repeat1Inf(%q, ", g.syn(rep.key))
 		}
+	} else {
+		g.wf("operators.Repeat1Inf(%q, %q, %q, ", g.syn(rep.key), rep.min, rep.max)
 	}
-
-	return jen.Qual(operatorsPkg, "Repeat").Call(
-		jen.Lit(g.syn(rep.key)),
-		jen.Lit(rep.min),
-		jen.Lit(rep.max),
-		rep.subOperator.toJen(g),
-	)
+	rep.subOperator.generate(g)
+	g.w(")")
 }
 
-func (name RuleNameOperator) toJen(g *CodeGenerator) jen.Code {
+func (name RuleNameOperator) generate(g *CodeGenerator) {
 	if external, ok := g.ExternalABNF[name.key]; ok {
+		g.wf("%s.%s", external.PackageName, name.key)
 		if external.IsOperator {
-			return jen.Qual(external.PackageName, name.key).Call()
+			g.w("()")
 		}
-		return jen.Qual(external.PackageName, name.key)
+	} else {
+		g.w(formatRuleName(g.syn(name.key)))
+		if g.isOperator {
+			g.w("()")
+		}
 	}
-	if g.isOperator {
-		return jen.Id(formatRuleName(g.syn(name.key))).Call()
-	}
-	return jen.Id(formatRuleName(g.syn(name.key)))
 }
 
-func (opt OptionOperator) toJen(g *CodeGenerator) jen.Code {
-	return jen.Qual(operatorsPkg, "Optional").Call(
-		jen.Lit(g.syn(opt.key)),
-		opt.subOperator.toJen(g),
-	)
+func (opt OptionOperator) generate(g *CodeGenerator) {
+	g.wf("operators.Optional(%q, ", g.syn(opt.key))
+	opt.subOperator.generate(g)
+	g.w(")")
 }
 
-func (value CharacterValueOperator) toJen(g *CodeGenerator) jen.Code {
-	return jen.Qual(operatorsPkg, "String").Call(
-		jen.Lit(g.syn(value.value)),
-		jen.Lit(value.value),
-	)
+func (value CharacterValueOperator) generate(g *CodeGenerator) {
+	g.wf("operators.String(%q, %q)", g.syn(value.value), value.value)
 }
 
-func (value NumericValueOperator) toJen(g *CodeGenerator) jen.Code {
+func (value NumericValueOperator) generate(g *CodeGenerator) {
 	values := value.toIntegers()
 
 	if value.hyphen {
 		min, max := values[0], values[1]
-
-		minValues := make([]jen.Code, len(min))
-		for i, v := range min {
-			minValues[i] = jen.Lit(v)
+		var minValues string
+		for _, v := range min {
+			minValues = strconv.Itoa(v)
 		}
-		maxValues := make([]jen.Code, len(max))
-		for i, v := range max {
-			maxValues[i] = jen.Lit(v)
+		var maxValues string
+		for _, v := range max {
+			maxValues = strconv.Itoa(v)
 		}
-
-		return jen.Qual(operatorsPkg, "Range").Call(
-			jen.Lit(g.syn(value.key)),
-			jen.Index().Byte().Values(minValues...),
-			jen.Index().Byte().Values(maxValues...),
-		)
-	}
-
-	if value.points {
+		g.wf("operators.Range(%q, []byte{%s}, []byte{%s})", g.syn(value.key), minValues, maxValues)
+	} else if value.points {
 		var str string
 		for _, part := range values {
 			var bytes []byte
@@ -225,18 +252,12 @@ func (value NumericValueOperator) toJen(g *CodeGenerator) jen.Code {
 			}
 			str += string(bytes)
 		}
-		return jen.Qual(operatorsPkg, "String").Call(
-			jen.Lit(g.syn(value.key)),
-			jen.Lit(str),
-		)
+		g.wf("operators.String(%q, %q)", g.syn(value.key), str)
+	} else {
+		var bytes string
+		for _, v := range values[0] {
+			bytes = strconv.Itoa(v)
+		}
+		g.wf("operators.Terminal(%q, []byte{%s})", g.syn(value.key), bytes)
 	}
-
-	bytes := make([]jen.Code, len(values[0]))
-	for i, v := range values[0] {
-		bytes[i] = jen.Lit(v)
-	}
-	return jen.Qual(operatorsPkg, "Terminal").Call(
-		jen.Lit(g.syn(value.key)),
-		jen.Index().Byte().Values(bytes...),
-	)
 }

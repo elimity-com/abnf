@@ -63,10 +63,9 @@ func (n *Node) Equals(other *Node) error {
 }
 
 // IsEmpty returns whether the node has no value.
-func (n *Node) IsEmpty() bool  {
+func (n *Node) IsEmpty() bool {
 	return len(n.Value) == 0
 }
-
 
 // GetImmediateSubNode searches the children of the node for the given key and returns that child.
 func (n *Node) GetImmediateSubNode(key string) *Node {
@@ -92,7 +91,7 @@ func (n *Node) GetSubNodes(key string) Children {
 }
 
 // GetSubNode searches ALL the children of the node for the given key and returns that child without passing a stop-key.
-func (n *Node) GetSubNodesBefore( key string, stop ...string) Children {
+func (n *Node) GetSubNodesBefore(key string, stop ...string) Children {
 	return n.Children.GetAllBefore(key, stop...)
 }
 

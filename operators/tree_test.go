@@ -148,10 +148,10 @@ func TestNode(t *testing.T) {
 					Value: []byte("aa"),
 					Children: Children{
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
-						},{
-							Key: "a",
+						}, {
+							Key:   "a",
 							Value: []byte("a"),
 						},
 					},
@@ -161,7 +161,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("a"),
 					Children: Children{
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
 						},
 					},
@@ -193,11 +193,11 @@ func TestNode(t *testing.T) {
 					Value: []byte("aa"),
 					Children: Children{
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
 						},
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
 						},
 					},
@@ -207,7 +207,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("a"),
 					Children: Children{
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
 						},
 					},
@@ -229,7 +229,7 @@ func TestNode(t *testing.T) {
 					Value: []byte("a"),
 					Children: Children{
 						{
-							Key: "a",
+							Key:   "a",
 							Value: []byte("a"),
 						},
 					},
@@ -298,7 +298,7 @@ func TestNode(t *testing.T) {
 							Value: []byte("a"),
 							Children: Children{
 								{
-									Key: "a",
+									Key:   "a",
 									Value: []byte("a"),
 								},
 							},
@@ -322,7 +322,7 @@ func TestNode(t *testing.T) {
 							Value: []byte("a"),
 							Children: Children{
 								{
-									Key: "a",
+									Key:   "a",
 									Value: []byte("a"),
 								},
 							},

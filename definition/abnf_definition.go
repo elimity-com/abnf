@@ -3,7 +3,8 @@
 package definition
 
 import (
-	core "github.com/elimity-com/abnf/core"
+	"github.com/elimity-com/abnf/core"
+
 	"github.com/elimity-com/abnf/operators"
 )
 
