@@ -199,7 +199,7 @@ func (rep RepetitionOperator) generate(g *CodeGenerator) {
 			g.wf("operators.Repeat1Inf(%q, ", g.syn(rep.key))
 		}
 	} else {
-		g.wf("operators.Repeat1Inf(%q, %q, %q, ", g.syn(rep.key), rep.min, rep.max)
+		g.wf("operators.Repeat(%q, %q, %q, ", g.syn(rep.key), rep.min, rep.max)
 	}
 	rep.subOperator.generate(g)
 	g.w(")")
