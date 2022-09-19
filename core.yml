@@ -1,0 +1,7 @@
+version: "1"
+spec: "./testdata/core.abnf"
+gofile: "core_abnf.go"
+package: "core"
+output: "."
+verbose: false
+generate: "operators"

@@ -84,3 +84,44 @@ CRLF = CR LF / LF
 7. Alternative
 
 `lowest`
+
+
+## Automation
+It is possible to specify a configuration using a YAML file to automate the code generation. To install the command:
+
+```abnf
+go install github.com/elimity-com/abnf/cmd/abnf@latest
+abnf generate
+```
+
+The generate command expects to find an `abnf.yml` file in its working directory. This YAML file defines and controls
+the code generation. To specify a different YAML file:
+
+```abnf
+ abnf -f ./path/to/foo.yml generate
+```
+
+Creation of an empty YAML file is done by invoking the `init` function. 
+
+### Generating an empty YAML file
+```abnf
+abnf init
+```
+
+The `abnf.yml` file is written out in the current working directory. To specify a different location to write out 
+the file, use the same `-f` flag:
+
+```abnf
+abnf -f ./path/to/foo.yml init
+```
+
+#### Code Generation Configuration Properties
+- **version**: must be defined as "1" 
+- **spec**: is the path to the ABNF specification file, e.g. `./testdata/core.abnf` 
+- **gofile**: the name of the Go file to generated, e.g. `core_abnf.go`
+- **package**: the name of the package for the Go file generated, e.g. `core`
+- **output**: the output path where the package (folder) and Go file are written, e.g. `.`
+- **generate**: the type of generation, {`operators`, `alternatives`}
+- **verbose**: displays additional debugging information
+
+The `generate` option either invokes `GenerateABNFAsOperators` or `GenerateABNFAsAlternatives`
